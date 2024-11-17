@@ -1,0 +1,61 @@
+body {
+  font-family: Open Sans;
+  font-size: 16px;
+  margin: 0;
+  padding: 0;
+}
+
+header {
+  background-color: #3498db;
+  padding: 20px;
+  text-align: center;
+}
+
+nav ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: space-between;
+}
+
+nav li {
+  margin-right: 20px;
+}
+
+nav a {
+  color: #f1c40f;
+  text-decoration: none;
+}
+
+.hero {
+  background-image: url('background.jpg');
+  background-size: cover;
+  background-position: center;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #fff;
+}
+
+.hero h1 {
+  font-size: 48px;
+}
+
+.diary-entries ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.diary-entries li {
+  margin-bottom: 20px;
+}
+
+.diary-entries img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 10px;
+}
