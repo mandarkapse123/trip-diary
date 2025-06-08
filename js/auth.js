@@ -69,6 +69,35 @@ class AuthManager {
       // Check for existing session
       const { data: { session } } = await this.supabase.auth.getSession();
 
+      // Also check for auth tokens in URL (from email confirmation)
+      const urlParams = new URLSearchParams(window.location.search);
+      const accessToken = urlParams.get('access_token');
+      const refreshToken = urlParams.get('refresh_token');
+
+      if (accessToken && refreshToken) {
+        console.log('🔗 Auth tokens found in URL, setting session...');
+        try {
+          const { data: sessionData, error: sessionError } = await this.supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken
+          });
+
+          if (sessionError) throw sessionError;
+
+          // Clean up URL
+          window.history.replaceState({}, document.title, window.location.pathname);
+
+          if (sessionData.session) {
+            console.log('✅ Session set from URL tokens, logging in user');
+            await this.handleAuthSuccess(sessionData.session.user);
+            return;
+          }
+        } catch (error) {
+          console.error('❌ Error setting session from URL tokens:', error);
+          this.showNotification('Email verification failed. Please try again.', 'error');
+        }
+      }
+
       if (session) {
         console.log('✅ Existing session found, logging in user');
         await this.handleAuthSuccess(session.user);
@@ -182,6 +211,9 @@ class AuthManager {
   }
 
   async signUp(email, password, fullName) {
+    // Get the current URL for redirect
+    const currentUrl = window.location.origin + window.location.pathname;
+
     const { data, error } = await this.supabase.auth.signUp({
       email,
       password,
@@ -189,6 +221,7 @@ class AuthManager {
         data: {
           full_name: fullName,
         },
+        emailRedirectTo: currentUrl
       },
     });
 
@@ -196,7 +229,7 @@ class AuthManager {
 
     if (data.user && !data.user.email_confirmed_at) {
       this.showNotification(
-        'Please check your email and click the confirmation link to complete registration.',
+        'Please check your email and click the confirmation link to complete registration. The link will redirect you back to this page.',
         'info'
       );
     } else {
