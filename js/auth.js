@@ -19,6 +19,25 @@ class AuthManager {
 
   async initializeAuth() {
     try {
+      // Check if we're in demo mode
+      if (SUPABASE_CONFIG.url === 'DEMO_MODE') {
+        console.log('Running in DEMO MODE - No Supabase connection');
+        this.setupEventListeners();
+
+        // Simulate demo user login after a short delay
+        setTimeout(() => {
+          const demoUser = {
+            id: 'demo-user-123',
+            email: 'demo@familyhealthtracker.com',
+            user_metadata: {
+              full_name: 'Demo User'
+            }
+          };
+          this.handleAuthSuccess(demoUser);
+        }, 1000);
+        return;
+      }
+
       // Initialize Supabase client
       this.supabase = supabase.createClient(
         SUPABASE_CONFIG.url,
@@ -30,7 +49,7 @@ class AuthManager {
 
       // Check for existing session
       const { data: { session } } = await this.supabase.auth.getSession();
-      
+
       if (session) {
         await this.handleAuthSuccess(session.user);
       } else {

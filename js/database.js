@@ -5,16 +5,144 @@ class DatabaseManager {
   constructor() {
     this.supabase = null;
     this.currentUser = null;
+    this.demoMode = false;
+    this.demoData = {
+      vitals: [],
+      reports: [],
+      family: []
+    };
   }
 
   initialize(supabaseClient, user) {
     this.supabase = supabaseClient;
     this.currentUser = user;
+    this.demoMode = SUPABASE_CONFIG.url === 'DEMO_MODE';
+
+    if (this.demoMode) {
+      this.initializeDemoData();
+    }
+  }
+
+  initializeDemoData() {
+    // Generate some demo vital signs data
+    const now = new Date();
+    const demoVitals = [];
+
+    // Generate 30 days of demo data
+    for (let i = 0; i < 30; i++) {
+      const date = new Date(now.getTime() - (i * 24 * 60 * 60 * 1000));
+
+      // Blood pressure
+      demoVitals.push({
+        id: `demo-bp-${i}`,
+        user_id: this.currentUser.id,
+        vital_type: 'blood_pressure',
+        systolic: 110 + Math.floor(Math.random() * 20),
+        diastolic: 70 + Math.floor(Math.random() * 15),
+        value: 110 + Math.floor(Math.random() * 20),
+        recorded_at: date.toISOString(),
+        notes: i === 0 ? 'Latest reading' : null,
+        created_at: date.toISOString()
+      });
+
+      // Heart rate
+      if (i % 2 === 0) {
+        demoVitals.push({
+          id: `demo-hr-${i}`,
+          user_id: this.currentUser.id,
+          vital_type: 'heart_rate',
+          value: 65 + Math.floor(Math.random() * 20),
+          recorded_at: date.toISOString(),
+          created_at: date.toISOString()
+        });
+      }
+
+      // Weight (weekly)
+      if (i % 7 === 0) {
+        demoVitals.push({
+          id: `demo-weight-${i}`,
+          user_id: this.currentUser.id,
+          vital_type: 'weight',
+          value: 70 + Math.floor(Math.random() * 10),
+          recorded_at: date.toISOString(),
+          created_at: date.toISOString()
+        });
+      }
+    }
+
+    this.demoData.vitals = demoVitals;
+
+    // Demo reports
+    this.demoData.reports = [
+      {
+        id: 'demo-report-1',
+        user_id: this.currentUser.id,
+        title: 'Annual Physical Exam',
+        report_date: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        file_url: '#',
+        file_name: 'annual-physical-2024.pdf',
+        file_type: 'application/pdf',
+        notes: 'All values within normal range',
+        created_at: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString()
+      },
+      {
+        id: 'demo-report-2',
+        user_id: this.currentUser.id,
+        title: 'Lipid Panel',
+        report_date: new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        file_url: '#',
+        file_name: 'lipid-panel-2024.pdf',
+        file_type: 'application/pdf',
+        notes: 'Cholesterol slightly elevated',
+        created_at: new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000).toISOString()
+      }
+    ];
+
+    // Demo family
+    this.demoData.family = [
+      {
+        id: 'demo-family-1',
+        family_admin_id: this.currentUser.id,
+        member_user_id: 'demo-spouse',
+        relationship: 'spouse',
+        status: 'active',
+        permissions: { can_view_family: true, can_manage_family: false },
+        member: {
+          full_name: 'Jane Demo',
+          email: 'jane@demo.com'
+        }
+      },
+      {
+        id: 'demo-family-2',
+        family_admin_id: this.currentUser.id,
+        email: 'john@demo.com',
+        full_name: 'John Demo Jr.',
+        relationship: 'child',
+        status: 'pending',
+        permissions: { can_view_family: false, can_manage_family: false }
+      }
+    ];
   }
 
   // Vital Signs Operations
   async saveVitalSign(vitalData) {
     try {
+      if (this.demoMode) {
+        const newVital = {
+          id: `demo-${Date.now()}`,
+          user_id: this.currentUser.id,
+          vital_type: vitalData.type,
+          value: vitalData.value,
+          systolic: vitalData.systolic || null,
+          diastolic: vitalData.diastolic || null,
+          recorded_at: vitalData.date,
+          notes: vitalData.notes || null,
+          created_at: new Date().toISOString(),
+        };
+        this.demoData.vitals.unshift(newVital);
+        return newVital;
+      }
+
       const { data, error } = await this.supabase
         .from('vital_signs')
         .insert({
@@ -40,6 +168,22 @@ class DatabaseManager {
 
   async getVitalSigns(vitalType = null, limit = 100, days = 30) {
     try {
+      if (this.demoMode) {
+        let filteredVitals = this.demoData.vitals.filter(vital => {
+          const vitalDate = new Date(vital.recorded_at);
+          const cutoffDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+          return vitalDate >= cutoffDate;
+        });
+
+        if (vitalType) {
+          filteredVitals = filteredVitals.filter(vital => vital.vital_type === vitalType);
+        }
+
+        return filteredVitals
+          .sort((a, b) => new Date(b.recorded_at) - new Date(a.recorded_at))
+          .slice(0, limit);
+      }
+
       let query = this.supabase
         .from('vital_signs')
         .select('*')
@@ -63,6 +207,13 @@ class DatabaseManager {
 
   async getLatestVitalSign(vitalType) {
     try {
+      if (this.demoMode) {
+        const vitals = this.demoData.vitals
+          .filter(vital => vital.vital_type === vitalType)
+          .sort((a, b) => new Date(b.recorded_at) - new Date(a.recorded_at));
+        return vitals.length > 0 ? vitals[0] : null;
+      }
+
       const { data, error } = await this.supabase
         .from('vital_signs')
         .select('*')
@@ -124,6 +275,12 @@ class DatabaseManager {
 
   async getBloodReports(limit = 50) {
     try {
+      if (this.demoMode) {
+        return this.demoData.reports
+          .sort((a, b) => new Date(b.report_date) - new Date(a.report_date))
+          .slice(0, limit);
+      }
+
       const { data, error } = await this.supabase
         .from('blood_reports')
         .select('*')
@@ -207,6 +364,10 @@ class DatabaseManager {
   // Family Management Operations
   async getFamilyMembers() {
     try {
+      if (this.demoMode) {
+        return this.demoData.family;
+      }
+
       const { data, error } = await this.supabase
         .from('family_members')
         .select(`
