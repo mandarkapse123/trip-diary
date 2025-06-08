@@ -38,8 +38,13 @@ class AuthManager {
         return;
       }
 
+      // Check if Supabase is loaded
+      if (!window.supabase) {
+        throw new Error('Supabase library not loaded. Please check your internet connection.');
+      }
+
       // Initialize Supabase client
-      this.supabase = supabase.createClient(
+      this.supabase = window.supabase.createClient(
         SUPABASE_CONFIG.url,
         SUPABASE_CONFIG.anonKey
       );
@@ -294,5 +299,8 @@ class AuthManager {
 
 // Initialize auth manager when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-  window.authManager = new AuthManager();
+  // Wait a bit for all scripts to load
+  setTimeout(() => {
+    window.authManager = new AuthManager();
+  }, 100);
 });
