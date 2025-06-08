@@ -3,6 +3,7 @@
 
 class AuthManager {
   constructor() {
+    console.log('🏗️ AuthManager constructor called');
     this.supabase = null;
     this.currentUser = null;
     this.authModal = document.getElementById('auth-modal');
@@ -13,15 +14,23 @@ class AuthManager {
     this.authSwitchLink = document.getElementById('auth-switch-link');
     this.nameGroup = document.getElementById('name-group');
     this.isSignUp = false;
-    
+
+    console.log('🔧 AuthManager DOM elements found:', {
+      authModal: !!this.authModal,
+      authForm: !!this.authForm,
+      authTitle: !!this.authTitle
+    });
+
+    console.log('🚀 Starting auth initialization...');
     this.initializeAuth();
   }
 
   async initializeAuth() {
+    console.log('🔐 initializeAuth() called');
     try {
       // Check if we're in demo mode
       if (SUPABASE_CONFIG.url === 'DEMO_MODE') {
-        console.log('Running in DEMO MODE - No Supabase connection');
+        console.log('🎭 Running in DEMO MODE - No Supabase connection');
         this.setupEventListeners();
 
         // Simulate demo user login after a short delay
@@ -38,31 +47,40 @@ class AuthManager {
         return;
       }
 
+      console.log('🔍 Checking Supabase availability...');
       // Check if Supabase is loaded
       if (!window.supabase) {
         throw new Error('Supabase library not loaded. Please check your internet connection.');
       }
 
+      console.log('🔗 Creating Supabase client...');
       // Initialize Supabase client
       this.supabase = window.supabase.createClient(
         SUPABASE_CONFIG.url,
         SUPABASE_CONFIG.anonKey
       );
+      console.log('✅ Supabase client created successfully');
 
+      console.log('🎧 Setting up event listeners...');
       // Set up event listeners
       this.setupEventListeners();
 
+      console.log('🔍 Checking for existing session...');
       // Check for existing session
       const { data: { session } } = await this.supabase.auth.getSession();
 
       if (session) {
+        console.log('✅ Existing session found, logging in user');
         await this.handleAuthSuccess(session.user);
       } else {
+        console.log('📝 No existing session, showing auth modal');
         this.showAuthModal();
       }
 
+      console.log('👂 Setting up auth state change listener...');
       // Listen for auth state changes
       this.supabase.auth.onAuthStateChange((event, session) => {
+        console.log('🔄 Auth state changed:', event);
         if (event === 'SIGNED_IN' && session) {
           this.handleAuthSuccess(session.user);
         } else if (event === 'SIGNED_OUT') {
@@ -70,8 +88,10 @@ class AuthManager {
         }
       });
 
+      console.log('🎉 Auth initialization completed successfully!');
+
     } catch (error) {
-      console.error('Auth initialization error:', error);
+      console.error('❌ Auth initialization error:', error);
       this.showNotification('Authentication initialization failed', 'error');
     }
   }
@@ -94,8 +114,24 @@ class AuthManager {
   }
 
   showAuthModal() {
-    this.authModal.classList.remove('hidden');
-    document.getElementById('loading-screen').classList.add('hidden');
+    console.log('📱 showAuthModal() called');
+    console.log('🔍 Auth modal element:', this.authModal);
+    console.log('🔍 Loading screen element:', document.getElementById('loading-screen'));
+
+    if (this.authModal) {
+      this.authModal.classList.remove('hidden');
+      console.log('✅ Auth modal shown');
+    } else {
+      console.error('❌ Auth modal element not found!');
+    }
+
+    const loadingScreen = document.getElementById('loading-screen');
+    if (loadingScreen) {
+      loadingScreen.classList.add('hidden');
+      console.log('✅ Loading screen hidden');
+    } else {
+      console.error('❌ Loading screen element not found!');
+    }
   }
 
   hideAuthModal() {
@@ -319,11 +355,15 @@ function waitForLibraries() {
 
 // Initialize auth manager when libraries are ready
 async function initializeAuthManager() {
+  console.log('🚀 Starting auth manager initialization...');
   try {
+    console.log('⏳ Waiting for libraries to be ready...');
     await waitForLibraries();
+    console.log('📱 Creating AuthManager instance...');
     window.authManager = new AuthManager();
+    console.log('✅ AuthManager created successfully!');
   } catch (error) {
-    console.error('Failed to initialize auth manager:', error);
+    console.error('❌ Failed to initialize auth manager:', error);
     // Show error message to user
     const loadingScreen = document.getElementById('loading-screen');
     if (loadingScreen) {
