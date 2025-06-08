@@ -6,8 +6,6 @@
   <title>Family Health Tracker</title>
   <link rel="stylesheet" href="styles.css">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
-  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
 <body>
   <!-- Loading Screen -->
@@ -547,36 +545,85 @@
     </div>
   </footer>
 
-  <!-- Scripts -->
+  <!-- Load Required Libraries -->
   <script>
-    // Check if libraries loaded successfully
-    window.addEventListener('load', () => {
-      if (!window.supabase) {
-        console.error('Supabase failed to load from CDN');
-        // Try alternative CDN
+    // Load libraries with proper error handling
+    function loadScript(src, name) {
+      return new Promise((resolve, reject) => {
         const script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.js';
-        script.onload = () => console.log('Supabase loaded from alternative CDN');
+        script.src = src;
+        script.onload = () => {
+          console.log(`✅ ${name} loaded successfully`);
+          resolve();
+        };
+        script.onerror = () => {
+          console.error(`❌ Failed to load ${name} from ${src}`);
+          reject(new Error(`Failed to load ${name}`));
+        };
         document.head.appendChild(script);
-      }
+      });
+    }
 
-      if (!window.Chart) {
-        console.error('Chart.js failed to load from CDN');
-        // Try alternative CDN
-        const script = document.createElement('script');
-        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.js';
-        script.onload = () => console.log('Chart.js loaded from alternative CDN');
-        document.head.appendChild(script);
+    // Load libraries sequentially
+    async function loadLibraries() {
+      try {
+        // Load Supabase
+        try {
+          await loadScript('https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js', 'Supabase');
+        } catch (error) {
+          console.log('Trying alternative Supabase CDN...');
+          await loadScript('https://cdn.skypack.dev/@supabase/supabase-js@2', 'Supabase (alternative)');
+        }
+
+        // Load Chart.js
+        try {
+          await loadScript('https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js', 'Chart.js');
+        } catch (error) {
+          console.log('Trying alternative Chart.js CDN...');
+          await loadScript('https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.js', 'Chart.js (alternative)');
+        }
+
+        console.log('🎉 All libraries loaded successfully!');
+
+        // Now load application scripts
+        const appScripts = [
+          'js/config.js',
+          'js/auth.js',
+          'js/database.js',
+          'js/vitals.js',
+          'js/reports.js',
+          'js/family.js',
+          'js/charts.js',
+          'js/app.js'
+        ];
+
+        for (const scriptSrc of appScripts) {
+          await loadScript(scriptSrc, scriptSrc);
+        }
+
+      } catch (error) {
+        console.error('❌ Critical error loading libraries:', error);
+        document.getElementById('loading-screen').innerHTML = `
+          <div style="text-align: center; padding: 2rem;">
+            <h2 style="color: #dc3545;">Loading Error</h2>
+            <p>Failed to load required libraries. Please check your internet connection and try refreshing the page.</p>
+            <button onclick="window.location.reload()" style="background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
+              Refresh Page
+            </button>
+            <br><br>
+            <a href="test-libraries.html" style="color: #007bff;">Test Library Loading</a>
+          </div>
+        `;
       }
-    });
+    }
+
+    // Start loading when DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', loadLibraries);
+    } else {
+      loadLibraries();
+    }
   </script>
-  <script src="js/config.js"></script>
-  <script src="js/auth.js"></script>
-  <script src="js/database.js"></script>
-  <script src="js/vitals.js"></script>
-  <script src="js/reports.js"></script>
-  <script src="js/family.js"></script>
-  <script src="js/charts.js"></script>
-  <script src="js/app.js"></script>
+
 </body>
 </html>

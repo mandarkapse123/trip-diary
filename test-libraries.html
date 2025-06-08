@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Library Test - Family Health Tracker</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .test-result {
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+      font-weight: bold;
+    }
+    .success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    .error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    .loading {
+      background: #fff3cd;
+      color: #856404;
+      border: 1px solid #ffeaa7;
+    }
+    button {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 10px 5px;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <h1>Family Health Tracker - Library Test</h1>
+  <p>This page tests if the required libraries load correctly.</p>
+  
+  <div id="test-results">
+    <div class="test-result loading">🔄 Testing library loading...</div>
+  </div>
+  
+  <div id="actions" style="display: none;">
+    <h3>Actions:</h3>
+    <button onclick="testSupabase()">Test Supabase Connection</button>
+    <button onclick="testChart()">Test Chart.js</button>
+    <button onclick="goToApp()">Go to Main App</button>
+  </div>
+
+  <!-- Load libraries with multiple fallbacks -->
+  <script>
+    console.log('Starting library loading test...');
+    
+    // Test results container
+    const resultsContainer = document.getElementById('test-results');
+    const actionsContainer = document.getElementById('actions');
+    
+    function addResult(message, type) {
+      const div = document.createElement('div');
+      div.className = `test-result ${type}`;
+      div.innerHTML = message;
+      resultsContainer.appendChild(div);
+    }
+    
+    function clearResults() {
+      resultsContainer.innerHTML = '';
+    }
+    
+    // Load Supabase with multiple fallbacks
+    function loadSupabase() {
+      return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        
+        // Try primary CDN
+        script.src = 'https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js';
+        script.onload = () => {
+          addResult('✅ Supabase loaded from unpkg.com', 'success');
+          resolve();
+        };
+        script.onerror = () => {
+          addResult('❌ Failed to load from unpkg.com, trying alternative...', 'error');
+          
+          // Try alternative CDN
+          const script2 = document.createElement('script');
+          script2.src = 'https://cdn.skypack.dev/@supabase/supabase-js@2';
+          script2.onload = () => {
+            addResult('✅ Supabase loaded from skypack.dev', 'success');
+            resolve();
+          };
+          script2.onerror = () => {
+            addResult('❌ All Supabase CDNs failed', 'error');
+            reject(new Error('Supabase failed to load'));
+          };
+          document.head.appendChild(script2);
+        };
+        document.head.appendChild(script);
+      });
+    }
+    
+    // Load Chart.js with fallbacks
+    function loadChart() {
+      return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        
+        // Try primary CDN
+        script.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js';
+        script.onload = () => {
+          addResult('✅ Chart.js loaded from jsdelivr.net', 'success');
+          resolve();
+        };
+        script.onerror = () => {
+          addResult('❌ Failed to load from jsdelivr.net, trying alternative...', 'error');
+          
+          // Try alternative CDN
+          const script2 = document.createElement('script');
+          script2.src = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.js';
+          script2.onload = () => {
+            addResult('✅ Chart.js loaded from cloudflare.com', 'success');
+            resolve();
+          };
+          script2.onerror = () => {
+            addResult('❌ All Chart.js CDNs failed', 'error');
+            reject(new Error('Chart.js failed to load'));
+          };
+          document.head.appendChild(script2);
+        };
+        document.head.appendChild(script);
+      });
+    }
+    
+    // Test functions
+    function testSupabase() {
+      if (window.supabase) {
+        try {
+          const client = window.supabase.createClient('https://test.supabase.co', 'test-key');
+          addResult('✅ Supabase client creation successful', 'success');
+        } catch (error) {
+          addResult('❌ Supabase client creation failed: ' + error.message, 'error');
+        }
+      } else {
+        addResult('❌ Supabase not available', 'error');
+      }
+    }
+    
+    function testChart() {
+      if (window.Chart) {
+        try {
+          addResult('✅ Chart.js is available, version: ' + Chart.version, 'success');
+        } catch (error) {
+          addResult('❌ Chart.js test failed: ' + error.message, 'error');
+        }
+      } else {
+        addResult('❌ Chart.js not available', 'error');
+      }
+    }
+    
+    function goToApp() {
+      window.location.href = 'index.html';
+    }
+    
+    // Load libraries on page load
+    window.addEventListener('load', async () => {
+      clearResults();
+      addResult('🔄 Loading Supabase...', 'loading');
+      
+      try {
+        await loadSupabase();
+        addResult('🔄 Loading Chart.js...', 'loading');
+        await loadChart();
+        
+        addResult('🎉 All libraries loaded successfully!', 'success');
+        actionsContainer.style.display = 'block';
+        
+        // Auto-test after loading
+        setTimeout(() => {
+          testSupabase();
+          testChart();
+        }, 500);
+        
+      } catch (error) {
+        addResult('❌ Library loading failed: ' + error.message, 'error');
+      }
+    });
+  </script>
+</body>
+</html>
