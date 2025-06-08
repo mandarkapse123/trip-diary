@@ -3,8 +3,8 @@
 
 // Supabase Configuration
 const SUPABASE_CONFIG = {
-  url: 'YOUR_SUPABASE_URL', // Replace with your Supabase URL
-  anonKey: 'YOUR_SUPABASE_ANON_KEY', // Replace with your Supabase anon key
+  url: 'https://zezfnvgtomnxhtlkbckp.supabase.co',
+  anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InplemZudmd0b21ueGh0bGtiY2twIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk0MDI4ODEsImV4cCI6MjA2NDk3ODg4MX0.dHo5u_t5Llfvxz8shiCPiYNhxWFZoyTo9CD5AErMiew',
 };
 
 // Application Configuration
