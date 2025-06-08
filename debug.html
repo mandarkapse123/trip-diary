@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Debug - Family Health Tracker</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 1000px;
+      margin: 20px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .debug-section {
+      background: white;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .status {
+      padding: 10px;
+      margin: 5px 0;
+      border-radius: 4px;
+      font-family: monospace;
+    }
+    .success { background: #d4edda; color: #155724; }
+    .error { background: #f8d7da; color: #721c24; }
+    .warning { background: #fff3cd; color: #856404; }
+    .info { background: #d1ecf1; color: #0c5460; }
+    button {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 5px;
+    }
+    button:hover { background: #0056b3; }
+    pre {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 4px;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+  <h1>Family Health Tracker - Debug Mode</h1>
+  
+  <div class="debug-section">
+    <h2>Library Loading Status</h2>
+    <div id="library-status">
+      <div class="status info">🔄 Checking library status...</div>
+    </div>
+    <button onclick="checkLibraries()">Refresh Status</button>
+    <button onclick="loadLibrariesManually()">Load Libraries Manually</button>
+  </div>
+  
+  <div class="debug-section">
+    <h2>Configuration</h2>
+    <div id="config-status">
+      <div class="status info">🔄 Checking configuration...</div>
+    </div>
+  </div>
+  
+  <div class="debug-section">
+    <h2>Console Output</h2>
+    <pre id="console-output">Console messages will appear here...</pre>
+    <button onclick="clearConsole()">Clear Console</button>
+  </div>
+  
+  <div class="debug-section">
+    <h2>Actions</h2>
+    <button onclick="testSupabaseConnection()">Test Supabase Connection</button>
+    <button onclick="testChartJS()">Test Chart.js</button>
+    <button onclick="goToMainApp()">Go to Main App</button>
+  </div>
+
+  <script>
+    // Capture console messages
+    const originalLog = console.log;
+    const originalError = console.error;
+    const consoleOutput = document.getElementById('console-output');
+    let consoleMessages = [];
+
+    function addConsoleMessage(type, message) {
+      const timestamp = new Date().toLocaleTimeString();
+      consoleMessages.push(`[${timestamp}] ${type.toUpperCase()}: ${message}`);
+      consoleOutput.textContent = consoleMessages.slice(-20).join('\n');
+    }
+
+    console.log = function(...args) {
+      originalLog.apply(console, args);
+      addConsoleMessage('log', args.join(' '));
+    };
+
+    console.error = function(...args) {
+      originalError.apply(console, args);
+      addConsoleMessage('error', args.join(' '));
+    };
+
+    // Check library status
+    function checkLibraries() {
+      const statusDiv = document.getElementById('library-status');
+      statusDiv.innerHTML = '';
+
+      // Check Supabase
+      if (window.supabase) {
+        statusDiv.innerHTML += '<div class="status success">✅ Supabase: Loaded</div>';
+      } else {
+        statusDiv.innerHTML += '<div class="status error">❌ Supabase: Not loaded</div>';
+      }
+
+      // Check Chart.js
+      if (window.Chart) {
+        statusDiv.innerHTML += '<div class="status success">✅ Chart.js: Loaded (version ' + (Chart.version || 'unknown') + ')</div>';
+      } else {
+        statusDiv.innerHTML += '<div class="status error">❌ Chart.js: Not loaded</div>';
+      }
+
+      // Check global flag
+      if (window.librariesLoaded) {
+        statusDiv.innerHTML += '<div class="status success">✅ Libraries flag: Set</div>';
+      } else {
+        statusDiv.innerHTML += '<div class="status warning">⚠️ Libraries flag: Not set</div>';
+      }
+    }
+
+    // Load libraries manually
+    async function loadLibrariesManually() {
+      const statusDiv = document.getElementById('library-status');
+      statusDiv.innerHTML = '<div class="status info">🔄 Loading libraries...</div>';
+
+      try {
+        // Load Supabase
+        if (!window.supabase) {
+          await loadScript('https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js');
+          console.log('Supabase loaded manually');
+        }
+
+        // Load Chart.js
+        if (!window.Chart) {
+          await loadScript('https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js');
+          console.log('Chart.js loaded manually');
+        }
+
+        window.librariesLoaded = true;
+        checkLibraries();
+        
+      } catch (error) {
+        statusDiv.innerHTML += '<div class="status error">❌ Failed to load libraries: ' + error.message + '</div>';
+      }
+    }
+
+    function loadScript(src) {
+      return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = src;
+        script.onload = resolve;
+        script.onerror = () => reject(new Error('Failed to load ' + src));
+        document.head.appendChild(script);
+      });
+    }
+
+    // Check configuration
+    function checkConfiguration() {
+      const configDiv = document.getElementById('config-status');
+      configDiv.innerHTML = '';
+
+      // This will be available after config.js loads
+      if (typeof SUPABASE_CONFIG !== 'undefined') {
+        configDiv.innerHTML += '<div class="status success">✅ Configuration loaded</div>';
+        configDiv.innerHTML += '<div class="status info">📍 Supabase URL: ' + SUPABASE_CONFIG.url + '</div>';
+        configDiv.innerHTML += '<div class="status info">🔑 Anon Key: ' + (SUPABASE_CONFIG.anonKey ? 'Set' : 'Not set') + '</div>';
+      } else {
+        configDiv.innerHTML += '<div class="status error">❌ Configuration not loaded</div>';
+      }
+    }
+
+    // Test functions
+    function testSupabaseConnection() {
+      if (!window.supabase) {
+        alert('Supabase not loaded');
+        return;
+      }
+
+      try {
+        const client = window.supabase.createClient('https://test.supabase.co', 'test-key');
+        console.log('Supabase client created successfully');
+        alert('✅ Supabase connection test passed');
+      } catch (error) {
+        console.error('Supabase test failed:', error);
+        alert('❌ Supabase test failed: ' + error.message);
+      }
+    }
+
+    function testChartJS() {
+      if (!window.Chart) {
+        alert('Chart.js not loaded');
+        return;
+      }
+
+      try {
+        console.log('Chart.js version:', Chart.version);
+        alert('✅ Chart.js test passed (version: ' + Chart.version + ')');
+      } catch (error) {
+        console.error('Chart.js test failed:', error);
+        alert('❌ Chart.js test failed: ' + error.message);
+      }
+    }
+
+    function goToMainApp() {
+      window.location.href = 'index.html';
+    }
+
+    function clearConsole() {
+      consoleMessages = [];
+      consoleOutput.textContent = 'Console cleared...';
+    }
+
+    // Load config.js to check configuration
+    loadScript('js/config.js').then(() => {
+      checkConfiguration();
+    }).catch(() => {
+      document.getElementById('config-status').innerHTML = '<div class="status error">❌ Failed to load config.js</div>';
+    });
+
+    // Initial status check
+    checkLibraries();
+    
+    // Auto-refresh status every 2 seconds
+    setInterval(checkLibraries, 2000);
+  </script>
+</body>
+</html>

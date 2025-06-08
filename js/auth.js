@@ -297,10 +297,52 @@ class AuthManager {
   }
 }
 
-// Initialize auth manager when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-  // Wait a bit for all scripts to load
-  setTimeout(() => {
+// Wait for libraries to be loaded before initializing
+function waitForLibraries() {
+  return new Promise((resolve) => {
+    const checkLibraries = () => {
+      if (window.supabase && window.Chart && window.librariesLoaded) {
+        console.log('✅ All libraries are ready, initializing auth manager');
+        resolve();
+      } else {
+        console.log('⏳ Waiting for libraries to load...', {
+          supabase: !!window.supabase,
+          chart: !!window.Chart,
+          librariesLoaded: !!window.librariesLoaded
+        });
+        setTimeout(checkLibraries, 200);
+      }
+    };
+    checkLibraries();
+  });
+}
+
+// Initialize auth manager when libraries are ready
+async function initializeAuthManager() {
+  try {
+    await waitForLibraries();
     window.authManager = new AuthManager();
-  }, 100);
-});
+  } catch (error) {
+    console.error('Failed to initialize auth manager:', error);
+    // Show error message to user
+    const loadingScreen = document.getElementById('loading-screen');
+    if (loadingScreen) {
+      loadingScreen.innerHTML = `
+        <div style="text-align: center; padding: 2rem;">
+          <h2 style="color: #dc3545;">Initialization Error</h2>
+          <p>Failed to initialize the application. Please refresh the page.</p>
+          <button onclick="window.location.reload()" style="background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
+            Refresh Page
+          </button>
+        </div>
+      `;
+    }
+  }
+}
+
+// Start initialization when DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeAuthManager);
+} else {
+  initializeAuthManager();
+}

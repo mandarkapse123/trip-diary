@@ -585,6 +585,9 @@
 
         console.log('🎉 All libraries loaded successfully!');
 
+        // Set global flag that libraries are ready
+        window.librariesLoaded = true;
+
         // Now load application scripts
         const appScripts = [
           'js/config.js',
@@ -600,6 +603,8 @@
         for (const scriptSrc of appScripts) {
           await loadScript(scriptSrc, scriptSrc);
         }
+
+        console.log('🎉 All application scripts loaded successfully!');
 
       } catch (error) {
         console.error('❌ Critical error loading libraries:', error);
