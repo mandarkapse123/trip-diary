@@ -3,6 +3,7 @@
 
 class FamilyHealthApp {
   constructor() {
+    console.log('🏗️ FamilyHealthApp constructor called');
     this.db = new DatabaseManager();
     this.vitalsManager = null;
     this.reportsManager = null;
@@ -10,8 +11,11 @@ class FamilyHealthApp {
     this.chartsManager = null;
     this.currentSection = 'dashboard';
     this.notifications = [];
-    
-    this.setupEventListeners();
+
+    // Set up event listeners after a short delay to ensure DOM is ready
+    setTimeout(() => {
+      this.setupEventListeners();
+    }, 100);
   }
 
   async initialize() {
@@ -45,9 +49,16 @@ class FamilyHealthApp {
   }
 
   setupEventListeners() {
+    console.log('🎧 Setting up event listeners...');
+
     // Navigation
-    document.querySelectorAll('.nav-btn').forEach(btn => {
+    const navButtons = document.querySelectorAll('.nav-btn');
+    console.log('🔍 Found navigation buttons:', navButtons.length);
+
+    navButtons.forEach((btn, index) => {
+      console.log(`📱 Setting up nav button ${index}:`, btn.dataset.section);
       btn.addEventListener('click', (e) => {
+        console.log('🖱️ Navigation button clicked:', e.target.closest('.nav-btn').dataset.section);
         const section = e.target.closest('.nav-btn').dataset.section;
         this.navigateToSection(section);
       });
@@ -57,23 +68,42 @@ class FamilyHealthApp {
     this.setupModalControls();
 
     // Quick action buttons
-    document.getElementById('add-vital-btn')?.addEventListener('click', () => {
+    const addVitalBtn = document.getElementById('add-vital-btn');
+    const uploadReportBtn = document.getElementById('upload-report-btn');
+    const addVitalModalBtn = document.getElementById('add-vital-modal-btn');
+    const uploadReportModalBtn = document.getElementById('upload-report-modal-btn');
+    const inviteMemberBtn = document.getElementById('invite-member-btn');
+
+    console.log('🔍 Found action buttons:', {
+      addVitalBtn: !!addVitalBtn,
+      uploadReportBtn: !!uploadReportBtn,
+      addVitalModalBtn: !!addVitalModalBtn,
+      uploadReportModalBtn: !!uploadReportModalBtn,
+      inviteMemberBtn: !!inviteMemberBtn
+    });
+
+    addVitalBtn?.addEventListener('click', () => {
+      console.log('🖱️ Add vital button clicked');
       this.showModal('add-vital-modal');
     });
 
-    document.getElementById('upload-report-btn')?.addEventListener('click', () => {
+    uploadReportBtn?.addEventListener('click', () => {
+      console.log('🖱️ Upload report button clicked');
       this.showModal('upload-report-modal');
     });
 
-    document.getElementById('add-vital-modal-btn')?.addEventListener('click', () => {
+    addVitalModalBtn?.addEventListener('click', () => {
+      console.log('🖱️ Add vital modal button clicked');
       this.showModal('add-vital-modal');
     });
 
-    document.getElementById('upload-report-modal-btn')?.addEventListener('click', () => {
+    uploadReportModalBtn?.addEventListener('click', () => {
+      console.log('🖱️ Upload report modal button clicked');
       this.showModal('upload-report-modal');
     });
 
-    document.getElementById('invite-member-btn')?.addEventListener('click', () => {
+    inviteMemberBtn?.addEventListener('click', () => {
+      console.log('🖱️ Invite member button clicked');
       this.showModal('invite-member-modal');
     });
 
@@ -117,17 +147,33 @@ class FamilyHealthApp {
   }
 
   navigateToSection(section) {
+    console.log('🧭 Navigating to section:', section);
+
     // Update navigation
     document.querySelectorAll('.nav-btn').forEach(btn => {
       btn.classList.remove('active');
     });
-    document.querySelector(`[data-section="${section}"]`).classList.add('active');
+
+    const activeBtn = document.querySelector(`[data-section="${section}"]`);
+    if (activeBtn) {
+      activeBtn.classList.add('active');
+      console.log('✅ Navigation button activated:', section);
+    } else {
+      console.error('❌ Navigation button not found for section:', section);
+    }
 
     // Update content sections
     document.querySelectorAll('.content-section').forEach(sec => {
       sec.classList.remove('active');
     });
-    document.getElementById(`${section}-section`).classList.add('active');
+
+    const targetSection = document.getElementById(`${section}-section`);
+    if (targetSection) {
+      targetSection.classList.add('active');
+      console.log('✅ Content section activated:', section);
+    } else {
+      console.error('❌ Content section not found:', `${section}-section`);
+    }
 
     this.currentSection = section;
 
@@ -301,10 +347,14 @@ class FamilyHealthApp {
   }
 
   showModal(modalId) {
+    console.log('📱 showModal called for:', modalId);
     const modal = document.getElementById(modalId);
+    console.log('🔍 Modal element found:', !!modal);
+
     if (modal) {
       modal.classList.remove('hidden');
-      
+      console.log('✅ Modal shown:', modalId);
+
       // Set current date/time for forms
       const dateTimeInput = modal.querySelector('input[type="datetime-local"]');
       if (dateTimeInput) {
@@ -317,6 +367,8 @@ class FamilyHealthApp {
       if (dateInput && !dateTimeInput) {
         dateInput.value = new Date().toISOString().split('T')[0];
       }
+    } else {
+      console.error('❌ Modal not found:', modalId);
     }
   }
 
