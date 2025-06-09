@@ -280,18 +280,16 @@ class AuthManager {
     console.log('🔍 Checking for window.app:', !!window.app);
     if (window.app && typeof window.app.initialize === 'function') {
       console.log('🚀 Calling app.initialize()');
-      window.app.initialize();
+      try {
+        await window.app.initialize();
+        console.log('✅ App initialization completed');
+      } catch (error) {
+        console.error('❌ App initialization error:', error);
+      }
     } else {
-      console.log('⚠️ window.app or initialize method not available, waiting...');
-      // Wait a bit and try again
-      setTimeout(() => {
-        if (window.app && typeof window.app.initialize === 'function') {
-          console.log('🚀 Calling app.initialize() (delayed)');
-          window.app.initialize();
-        } else {
-          console.error('❌ window.app.initialize still not available');
-        }
-      }, 500);
+      console.log('⚠️ window.app not available, setting up basic navigation...');
+      // Set up basic navigation as fallback
+      this.setupBasicNavigation();
     }
 
     this.showNotification('Welcome to Family Health Tracker!', 'success');
@@ -377,6 +375,66 @@ class AuthManager {
     const { data: { session } } = await this.supabase.auth.getSession();
     return !!session;
   }
+
+  setupBasicNavigation() {
+    console.log('🔧 Setting up basic navigation as fallback...');
+
+    // Set up navigation buttons
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const section = e.target.closest('.nav-btn').dataset.section;
+        console.log('🖱️ Basic navigation clicked:', section);
+
+        // Update navigation
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        // Update content sections
+        document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
+        const targetSection = document.getElementById(`${section}-section`);
+        if (targetSection) {
+          targetSection.classList.add('active');
+          console.log('✅ Section switched to:', section);
+        }
+      });
+    });
+
+    // Set up modal buttons
+    const modalButtons = [
+      { id: 'add-vital-btn', modal: 'add-vital-modal' },
+      { id: 'upload-report-btn', modal: 'upload-report-modal' },
+      { id: 'add-vital-modal-btn', modal: 'add-vital-modal' },
+      { id: 'upload-report-modal-btn', modal: 'upload-report-modal' },
+      { id: 'invite-member-btn', modal: 'invite-member-modal' }
+    ];
+
+    modalButtons.forEach(({ id, modal }) => {
+      const btn = document.getElementById(id);
+      if (btn) {
+        btn.addEventListener('click', () => {
+          console.log('🖱️ Modal button clicked:', id);
+          const modalElement = document.getElementById(modal);
+          if (modalElement) {
+            modalElement.classList.remove('hidden');
+            console.log('✅ Modal shown:', modal);
+          }
+        });
+      }
+    });
+
+    // Set up modal close buttons
+    document.querySelectorAll('.close-modal, .cancel-modal').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const modal = e.target.closest('.modal');
+        if (modal) {
+          modal.classList.add('hidden');
+          console.log('✅ Modal closed');
+        }
+      });
+    });
+
+    console.log('✅ Basic navigation setup completed');
+  }
 }
 
 // Wait for libraries to be loaded before initializing
@@ -405,6 +463,18 @@ async function initializeAuthManager() {
   try {
     console.log('⏳ Waiting for libraries to be ready...');
     await waitForLibraries();
+
+    // Ensure app is created before auth manager
+    console.log('🔍 Checking if app exists before creating auth manager...');
+    if (!window.app) {
+      console.log('⚠️ App not found, waiting for app initialization...');
+      // Wait a bit for app to be created
+      await new Promise(resolve => setTimeout(resolve, 500));
+      if (!window.app) {
+        console.log('🏗️ App still not found, this might be normal if auth happens first');
+      }
+    }
+
     console.log('📱 Creating AuthManager instance...');
     window.authManager = new AuthManager();
     console.log('✅ AuthManager created successfully!');
