@@ -74,63 +74,70 @@ class DocumentsManager {
   setupFileUpload() {
     console.log('🔧 Setting up document file upload functionality...');
 
-    // Use event delegation for dynamic elements
-    document.addEventListener('click', (e) => {
-      // Handle upload area clicks
-      if (e.target.closest('#document-upload-area')) {
-        console.log('🖱️ Document upload area clicked');
-        const fileInput = document.getElementById('document-file');
-        if (fileInput) {
-          fileInput.click();
-        }
-      }
-    });
+    // Set up upload area click handler with a delay to ensure DOM is ready
+    setTimeout(() => {
+      const uploadArea = document.getElementById('document-upload-area');
+      const fileInput = document.getElementById('document-file');
 
-    // Handle file input changes with event delegation
-    document.addEventListener('change', (e) => {
-      if (e.target.id === 'document-file') {
-        console.log('📄 Document file input changed');
-        if (e.target.files.length > 0) {
-          console.log('📄 Document selected via input:', e.target.files[0].name);
-          this.handleFileSelection(e.target.files[0]);
-        }
-      }
-    });
+      console.log('🔍 Upload elements found:', {
+        uploadArea: !!uploadArea,
+        fileInput: !!fileInput
+      });
 
-    // Handle drag and drop with event delegation
-    document.addEventListener('dragover', (e) => {
-      if (e.target.closest('#document-upload-area')) {
-        e.preventDefault();
-        e.target.closest('#document-upload-area').classList.add('dragover');
-        console.log('📁 Document dragged over upload area');
-      }
-    });
+      if (uploadArea && fileInput) {
+        // Remove any existing listeners
+        uploadArea.replaceWith(uploadArea.cloneNode(true));
+        const newUploadArea = document.getElementById('document-upload-area');
+        const newFileInput = document.getElementById('document-file');
 
-    document.addEventListener('dragleave', (e) => {
-      if (e.target.closest('#document-upload-area')) {
-        e.target.closest('#document-upload-area').classList.remove('dragover');
-      }
-    });
+        // Click to browse
+        newUploadArea.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          console.log('🖱️ Document upload area clicked');
+          newFileInput.click();
+        });
 
-    document.addEventListener('drop', (e) => {
-      if (e.target.closest('#document-upload-area')) {
-        e.preventDefault();
-        e.target.closest('#document-upload-area').classList.remove('dragover');
-        console.log('📁 Document dropped on upload area');
+        // File input change
+        newFileInput.addEventListener('change', (e) => {
+          console.log('📄 Document file input changed');
+          if (e.target.files.length > 0) {
+            console.log('📄 Document selected via input:', e.target.files[0].name);
+            this.handleFileSelection(e.target.files[0]);
+          }
+        });
 
-        const files = e.dataTransfer.files;
-        if (files.length > 0) {
-          console.log('📄 Document selected via drag & drop:', files[0].name);
-          const fileInput = document.getElementById('document-file');
-          if (fileInput) {
-            fileInput.files = files;
+        // Drag and drop
+        newUploadArea.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          newUploadArea.classList.add('dragover');
+          console.log('📁 Document dragged over upload area');
+        });
+
+        newUploadArea.addEventListener('dragleave', () => {
+          newUploadArea.classList.remove('dragover');
+        });
+
+        newUploadArea.addEventListener('drop', (e) => {
+          e.preventDefault();
+          newUploadArea.classList.remove('dragover');
+          console.log('📁 Document dropped on upload area');
+
+          const files = e.dataTransfer.files;
+          if (files.length > 0) {
+            console.log('📄 Document selected via drag & drop:', files[0].name);
+            newFileInput.files = files;
             this.handleFileSelection(files[0]);
           }
-        }
-      }
-    });
+        });
 
-    console.log('✅ Document file upload setup completed');
+        console.log('✅ Document file upload setup completed');
+      } else {
+        console.error('❌ Upload elements not found, retrying...');
+        // Retry after another delay
+        setTimeout(() => this.setupFileUpload(), 1000);
+      }
+    }, 500);
   }
 
   async loadDocuments() {

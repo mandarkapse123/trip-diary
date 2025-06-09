@@ -18,10 +18,24 @@ class DatabaseManager {
   initialize(supabaseClient, user) {
     this.supabase = supabaseClient;
     this.currentUser = user;
-    this.demoMode = SUPABASE_CONFIG.url === 'DEMO_MODE';
+    this.demoMode = SUPABASE_CONFIG.url === 'DEMO_MODE' || !supabaseClient;
+
+    console.log('🗄️ Database initialized:', {
+      demoMode: this.demoMode,
+      hasUser: !!user,
+      supabaseUrl: SUPABASE_CONFIG.url,
+      hasSupabaseClient: !!supabaseClient,
+      userEmail: user?.email
+    });
 
     if (this.demoMode) {
+      console.log('🎭 Running in DEMO MODE - Data will not be saved to Supabase');
       this.initializeDemoData();
+    } else {
+      console.log('☁️ Running with REAL SUPABASE - Data will be saved to cloud database');
+      console.log('📊 Supabase URL:', SUPABASE_CONFIG.url);
+      // Test Supabase connection
+      this.testSupabaseConnection();
     }
   }
 
@@ -124,6 +138,30 @@ class DatabaseManager {
         permissions: { can_view_family: false, can_manage_family: false }
       }
     ];
+  }
+
+  async testSupabaseConnection() {
+    try {
+      console.log('🔍 Testing Supabase connection...');
+      const { data, error } = await this.supabase
+        .from('user_profiles')
+        .select('count')
+        .limit(1);
+
+      if (error) {
+        console.error('❌ Supabase connection test failed:', error);
+        console.log('🎭 Falling back to demo mode due to connection error');
+        this.demoMode = true;
+        this.initializeDemoData();
+      } else {
+        console.log('✅ Supabase connection successful!');
+      }
+    } catch (error) {
+      console.error('❌ Supabase connection error:', error);
+      console.log('🎭 Falling back to demo mode due to connection error');
+      this.demoMode = true;
+      this.initializeDemoData();
+    }
   }
 
   // Vital Signs Operations

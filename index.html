@@ -668,8 +668,13 @@
           <div class="file-upload-area" id="file-upload-area">
             <i class="fas fa-cloud-upload-alt"></i>
             <p>Drag & drop your report here or click to browse</p>
-            <input type="file" id="report-file" accept=".pdf,.jpg,.jpeg,.png" hidden>
+            <small>Supported: PDF, JPG, PNG (max 10MB)</small>
           </div>
+          <input type="file" id="report-file" accept=".pdf,.jpg,.jpeg,.png" style="display: none;">
+          <button type="button" class="btn btn-secondary" style="margin-top: 0.5rem;" onclick="document.getElementById('report-file').click()">
+            <i class="fas fa-file-upload"></i>
+            Browse Files
+          </button>
         </div>
 
         <div class="form-group">
@@ -784,8 +789,13 @@
           <div class="file-upload-area" id="document-upload-area">
             <i class="fas fa-cloud-upload-alt"></i>
             <p>Drag & drop your document here or click to browse</p>
-            <input type="file" id="document-file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" hidden>
+            <small>Supported: PDF, JPG, PNG, DOC, DOCX (max 25MB)</small>
           </div>
+          <input type="file" id="document-file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" style="display: none;">
+          <button type="button" class="btn btn-secondary" style="margin-top: 0.5rem;" onclick="document.getElementById('document-file').click()">
+            <i class="fas fa-folder-open"></i>
+            Browse Files
+          </button>
         </div>
 
         <div class="form-group">
@@ -849,8 +859,13 @@
           <div class="file-upload-area photo-upload-area" id="photo-upload-area">
             <i class="fas fa-camera"></i>
             <p>Take a photo or upload from gallery</p>
-            <input type="file" id="photo-file" accept="image/*" capture="camera" hidden>
+            <small>Supported: JPG, PNG, HEIC (max 10MB)</small>
           </div>
+          <input type="file" id="photo-file" accept="image/*" capture="camera" style="display: none;">
+          <button type="button" class="btn btn-secondary" style="margin-top: 0.5rem;" onclick="document.getElementById('photo-file').click()">
+            <i class="fas fa-images"></i>
+            Browse Photos
+          </button>
         </div>
 
         <div class="form-group">
