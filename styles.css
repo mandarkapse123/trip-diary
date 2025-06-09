@@ -1879,25 +1879,88 @@ textarea {
   background: var(--primary-light);
 }
 
+/* Recent Activity Items */
+.vital-item,
+.document-item,
+.photo-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.vital-item:last-child,
+.document-item:last-child,
+.photo-item:last-child {
+  border-bottom: none;
+}
+
+.vital-item-label,
+.document-item-title,
+.photo-item-title {
+  font-weight: 500;
+  color: var(--text-primary);
+  flex: 1;
+}
+
+.vital-item-value {
+  font-weight: 600;
+  color: var(--primary-color);
+  margin: 0 1rem;
+}
+
+.vital-item-date,
+.document-item-date,
+.photo-item-date {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.document-item-category,
+.photo-item-category {
+  font-size: 0.75rem;
+  background: var(--background-secondary);
+  color: var(--text-secondary);
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  margin: 0 0.5rem;
+}
+
+/* Chart Container */
+.chart-card .card-content {
+  height: 300px;
+  position: relative;
+}
+
+#health-trends-chart {
+  width: 100% !important;
+  height: 100% !important;
+}
+
 /* Enhanced Responsive Design */
 @media (max-width: 768px) {
   .header-content {
     flex-direction: column;
     gap: 1rem;
+    padding: 1rem;
   }
 
   .nav {
     flex-wrap: wrap;
     justify-content: center;
+    gap: 0.5rem;
   }
 
   .nav-btn {
     font-size: 0.75rem;
     padding: 0.5rem 0.75rem;
+    min-width: auto;
   }
 
   .dashboard-grid {
     grid-template-columns: 1fr;
+    gap: 1rem;
   }
 
   .vitals-grid {
@@ -1910,6 +1973,7 @@ textarea {
 
   .parameters-grid {
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0.75rem;
   }
 
   .documents-grid {
@@ -1921,13 +1985,20 @@ textarea {
   }
 
   .category-tabs {
-    justify-content: center;
+    justify-content: flex-start;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+  }
+
+  .category-tab {
+    flex-shrink: 0;
   }
 
   .documents-filters,
   .photos-filters {
     flex-direction: column;
     align-items: stretch;
+    gap: 0.75rem;
   }
 
   .search-bar {
@@ -1935,7 +2006,14 @@ textarea {
   }
 
   .filter-controls {
-    justify-content: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .filter-controls select {
+    flex: 1;
+    min-width: 120px;
   }
 
   .modal-content {
@@ -1960,5 +2038,48 @@ textarea {
 
   .quick-actions .btn {
     width: 100%;
+    justify-content: center;
+  }
+
+  .section-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .section-header h1 {
+    text-align: center;
+  }
+
+  .vital-item,
+  .document-item,
+  .photo-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+
+  .vital-item-value {
+    margin: 0;
+  }
+
+  .parameter-card {
+    padding: 0.75rem;
+  }
+
+  .parameter-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 1.25rem;
+  }
+
+  .family-member-card {
+    padding: 0.75rem;
+  }
+
+  .member-avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 0.875rem;
   }
 }

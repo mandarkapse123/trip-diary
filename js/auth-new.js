@@ -305,6 +305,17 @@ class AuthManagerNew {
         window.photosManager = new PhotosManager(db);
         console.log('✅ Photos manager initialized');
       }
+
+      // Initialize dashboard manager
+      if (window.DashboardManager) {
+        window.dashboardManager = new DashboardManager(db);
+        console.log('✅ Dashboard manager initialized');
+
+        // Load dashboard data
+        setTimeout(() => {
+          window.dashboardManager.loadDashboard();
+        }, 500);
+      }
     }
 
     this.showNotification('Welcome to Family Health Tracker!', 'success');

@@ -24,54 +24,8 @@ class PhotosManager {
       });
     }
 
-    // File upload area for photos
-    const fileUploadArea = document.getElementById('photo-upload-area');
-    const fileInput = document.getElementById('photo-file');
-    
-    console.log('🔍 Photo upload elements found:', {
-      fileUploadArea: !!fileUploadArea,
-      fileInput: !!fileInput
-    });
-    
-    if (fileUploadArea && fileInput) {
-      // Click to browse or take photo
-      fileUploadArea.addEventListener('click', () => {
-        console.log('🖱️ Photo upload area clicked');
-        fileInput.click();
-      });
-      
-      // Drag and drop
-      fileUploadArea.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        fileUploadArea.classList.add('dragover');
-        console.log('📁 Photo dragged over upload area');
-      });
-      
-      fileUploadArea.addEventListener('dragleave', () => {
-        fileUploadArea.classList.remove('dragover');
-      });
-      
-      fileUploadArea.addEventListener('drop', (e) => {
-        e.preventDefault();
-        fileUploadArea.classList.remove('dragover');
-        console.log('📁 Photo dropped on upload area');
-        
-        const files = e.dataTransfer.files;
-        if (files.length > 0) {
-          console.log('📸 Photo selected via drag & drop:', files[0].name);
-          fileInput.files = files;
-          this.handleFileSelection(files[0]);
-        }
-      });
-      
-      // File input change
-      fileInput.addEventListener('change', (e) => {
-        if (e.target.files.length > 0) {
-          console.log('📸 Photo selected via input:', e.target.files[0].name);
-          this.handleFileSelection(e.target.files[0]);
-        }
-      });
-    }
+    // Set up file upload functionality with proper event delegation
+    this.setupFileUpload();
 
     // Category tabs for photos
     document.querySelectorAll('.photo-categories .category-tab').forEach(tab => {
@@ -115,6 +69,68 @@ class PhotosManager {
         this.toggleView();
       });
     }
+  }
+
+  setupFileUpload() {
+    console.log('🔧 Setting up photo file upload functionality...');
+
+    // Use event delegation for dynamic elements
+    document.addEventListener('click', (e) => {
+      // Handle upload area clicks
+      if (e.target.closest('#photo-upload-area')) {
+        console.log('🖱️ Photo upload area clicked');
+        const fileInput = document.getElementById('photo-file');
+        if (fileInput) {
+          fileInput.click();
+        }
+      }
+    });
+
+    // Handle file input changes with event delegation
+    document.addEventListener('change', (e) => {
+      if (e.target.id === 'photo-file') {
+        console.log('📸 Photo file input changed');
+        if (e.target.files.length > 0) {
+          console.log('📸 Photo selected via input:', e.target.files[0].name);
+          this.handleFileSelection(e.target.files[0]);
+        }
+      }
+    });
+
+    // Handle drag and drop with event delegation
+    document.addEventListener('dragover', (e) => {
+      if (e.target.closest('#photo-upload-area')) {
+        e.preventDefault();
+        e.target.closest('#photo-upload-area').classList.add('dragover');
+        console.log('📁 Photo dragged over upload area');
+      }
+    });
+
+    document.addEventListener('dragleave', (e) => {
+      if (e.target.closest('#photo-upload-area')) {
+        e.target.closest('#photo-upload-area').classList.remove('dragover');
+      }
+    });
+
+    document.addEventListener('drop', (e) => {
+      if (e.target.closest('#photo-upload-area')) {
+        e.preventDefault();
+        e.target.closest('#photo-upload-area').classList.remove('dragover');
+        console.log('📁 Photo dropped on upload area');
+
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+          console.log('📸 Photo selected via drag & drop:', files[0].name);
+          const fileInput = document.getElementById('photo-file');
+          if (fileInput) {
+            fileInput.files = files;
+            this.handleFileSelection(files[0]);
+          }
+        }
+      }
+    });
+
+    console.log('✅ Photo file upload setup completed');
   }
 
   async loadPhotos() {
