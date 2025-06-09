@@ -282,6 +282,15 @@ class AuthManagerNew {
     console.log('🔧 Setting up navigation with NEW method...');
     this.setupBasicNavigation();
 
+    // Initialize reports manager for upload functionality
+    console.log('📄 Initializing reports manager...');
+    if (window.DatabaseManager && window.ReportsManager) {
+      const db = new DatabaseManager();
+      db.initialize(this.supabase, user);
+      window.reportsManager = new ReportsManager(db);
+      console.log('✅ Reports manager initialized');
+    }
+
     this.showNotification('Welcome to Family Health Tracker!', 'success');
     console.log('✅ NEW Auth success handling completed');
   }

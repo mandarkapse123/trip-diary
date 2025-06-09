@@ -4,48 +4,67 @@
 class ReportsManager {
   constructor(databaseManager) {
     this.db = databaseManager;
+    console.log('🏗️ ReportsManager constructor called');
     this.setupEventListeners();
   }
 
   setupEventListeners() {
+    console.log('🎧 Setting up reports event listeners...');
+
     // Upload report form
     const uploadForm = document.getElementById('upload-report-form');
+    console.log('🔍 Upload form found:', !!uploadForm);
     if (uploadForm) {
-      uploadForm.addEventListener('submit', (e) => this.handleUploadReport(e));
+      uploadForm.addEventListener('submit', (e) => {
+        console.log('📤 Upload form submitted');
+        this.handleUploadReport(e);
+      });
     }
 
     // File upload area
     const fileUploadArea = document.getElementById('file-upload-area');
     const fileInput = document.getElementById('report-file');
-    
+
+    console.log('🔍 File upload elements found:', {
+      fileUploadArea: !!fileUploadArea,
+      fileInput: !!fileInput
+    });
+
     if (fileUploadArea && fileInput) {
       // Click to browse
-      fileUploadArea.addEventListener('click', () => fileInput.click());
-      
+      fileUploadArea.addEventListener('click', () => {
+        console.log('🖱️ File upload area clicked');
+        fileInput.click();
+      });
+
       // Drag and drop
       fileUploadArea.addEventListener('dragover', (e) => {
         e.preventDefault();
         fileUploadArea.classList.add('dragover');
+        console.log('📁 File dragged over upload area');
       });
-      
+
       fileUploadArea.addEventListener('dragleave', () => {
         fileUploadArea.classList.remove('dragover');
       });
-      
+
       fileUploadArea.addEventListener('drop', (e) => {
         e.preventDefault();
         fileUploadArea.classList.remove('dragover');
-        
+        console.log('📁 File dropped on upload area');
+
         const files = e.dataTransfer.files;
         if (files.length > 0) {
+          console.log('📄 File selected via drag & drop:', files[0].name);
           fileInput.files = files;
           this.handleFileSelection(files[0]);
         }
       });
-      
+
       // File input change
       fileInput.addEventListener('change', (e) => {
         if (e.target.files.length > 0) {
+          console.log('📄 File selected via input:', e.target.files[0].name);
           this.handleFileSelection(e.target.files[0]);
         }
       });
@@ -70,7 +89,7 @@ class ReportsManager {
       this.displayReports(reports);
     } catch (error) {
       console.error('Error loading reports:', error);
-      window.app.showNotification('Failed to load reports', 'error');
+      this.showNotification('Failed to load reports', 'error');
     }
   }
 
@@ -157,9 +176,11 @@ class ReportsManager {
   }
 
   validateFile(file) {
+    console.log('🔍 Validating file:', file.name, 'Size:', this.formatFileSize(file.size));
+
     // Check file size
     if (file.size > APP_CONFIG.maxFileSize) {
-      window.app.showNotification(
+      this.showNotification(
         `File size too large. Maximum size is ${this.formatFileSize(APP_CONFIG.maxFileSize)}`,
         'error'
       );
@@ -169,13 +190,14 @@ class ReportsManager {
     // Check file type
     const fileExtension = file.name.split('.').pop().toLowerCase();
     if (!APP_CONFIG.allowedFileTypes.includes(fileExtension)) {
-      window.app.showNotification(
+      this.showNotification(
         `File type not allowed. Allowed types: ${APP_CONFIG.allowedFileTypes.join(', ')}`,
         'error'
       );
       return false;
     }
 
+    console.log('✅ File validation passed');
     return true;
   }
 
@@ -189,19 +211,23 @@ class ReportsManager {
 
   async handleUploadReport(e) {
     e.preventDefault();
-    
+    console.log('📤 Handling upload report...');
+
     const title = document.getElementById('report-title').value;
     const date = document.getElementById('report-date').value;
     const notes = document.getElementById('report-notes').value;
     const fileInput = document.getElementById('report-file');
-    
+
+    console.log('📋 Form data:', { title, date, notes, hasFile: !!fileInput.files[0] });
+
     if (!fileInput.files[0]) {
-      window.app.showNotification('Please select a file to upload', 'error');
+      this.showNotification('Please select a file to upload', 'error');
       return;
     }
 
     const file = fileInput.files[0];
-    
+    console.log('📄 File to upload:', file.name, file.type, this.formatFileSize(file.size));
+
     if (!this.validateFile(file)) {
       return;
     }
@@ -209,31 +235,53 @@ class ReportsManager {
     try {
       // Show loading state
       this.setUploadLoading(true);
-      
-      // Upload file
-      const fileData = await this.db.uploadFile(file, 'blood-reports');
-      
-      // Save report metadata
-      const reportData = {
-        title,
-        date,
-        notes,
-        fileUrl: fileData.url,
-        fileName: fileData.fileName,
-        fileType: file.type,
-      };
-      
-      await this.db.saveBloodReport(reportData);
-      
+      console.log('⏳ Starting file upload...');
+
+      // For demo mode, simulate upload
+      if (this.db.demoMode) {
+        console.log('🎭 Demo mode: simulating upload...');
+        await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate upload delay
+
+        const reportData = {
+          id: 'demo-report-' + Date.now(),
+          title,
+          date,
+          notes,
+          fileUrl: '#demo-file',
+          fileName: file.name,
+          fileType: file.type,
+        };
+
+        this.db.demoData.reports.unshift(reportData);
+        console.log('✅ Demo upload completed');
+      } else {
+        // Real upload
+        const fileData = await this.db.uploadFile(file, 'blood-reports');
+        console.log('📁 File uploaded:', fileData);
+
+        // Save report metadata
+        const reportData = {
+          title,
+          date,
+          notes,
+          fileUrl: fileData.url,
+          fileName: fileData.fileName,
+          fileType: file.type,
+        };
+
+        await this.db.saveBloodReport(reportData);
+        console.log('💾 Report metadata saved');
+      }
+
       // Close modal and reload reports
-      window.app.hideModal('upload-report-modal');
+      this.hideModal('upload-report-modal');
       await this.loadReports();
-      
-      window.app.showNotification('Report uploaded successfully', 'success');
-      
+
+      this.showNotification('Report uploaded successfully', 'success');
+
     } catch (error) {
-      console.error('Error uploading report:', error);
-      window.app.showNotification('Failed to upload report', 'error');
+      console.error('❌ Error uploading report:', error);
+      this.showNotification('Failed to upload report: ' + error.message, 'error');
     } finally {
       this.setUploadLoading(false);
     }
@@ -262,11 +310,11 @@ class ReportsManager {
       if (report && report.file_url) {
         window.open(report.file_url, '_blank');
       } else {
-        window.app.showNotification('Report file not found', 'error');
+        this.showNotification('Report file not found', 'error');
       }
     } catch (error) {
       console.error('Error viewing report:', error);
-      window.app.showNotification('Failed to open report', 'error');
+      this.showNotification('Failed to open report', 'error');
     }
   }
 
@@ -283,13 +331,13 @@ class ReportsManager {
         a.click();
         document.body.removeChild(a);
         
-        window.app.showNotification('Download started', 'success');
+        this.showNotification('Download started', 'success');
       } else {
-        window.app.showNotification('Report file not found', 'error');
+        this.showNotification('Report file not found', 'error');
       }
     } catch (error) {
       console.error('Error downloading report:', error);
-      window.app.showNotification('Failed to download report', 'error');
+      this.showNotification('Failed to download report', 'error');
     }
   }
 
@@ -301,10 +349,10 @@ class ReportsManager {
     try {
       await this.db.deleteBloodReport(reportId);
       await this.loadReports();
-      window.app.showNotification('Report deleted successfully', 'success');
+      this.showNotification('Report deleted successfully', 'success');
     } catch (error) {
       console.error('Error deleting report:', error);
-      window.app.showNotification('Failed to delete report', 'error');
+      this.showNotification('Failed to delete report', 'error');
     }
   }
 
@@ -317,7 +365,7 @@ class ReportsManager {
       const title = card.querySelector('.report-title').textContent.toLowerCase();
       const notes = card.querySelector('.report-notes')?.textContent.toLowerCase() || '';
       const date = card.querySelector('.report-date').textContent;
-      
+
       let matchesSearch = title.includes(searchTerm) || notes.includes(searchTerm);
       let matchesFilter = true;
 
@@ -329,6 +377,37 @@ class ReportsManager {
 
       card.style.display = (matchesSearch && matchesFilter) ? 'block' : 'none';
     });
+  }
+
+  // Helper methods
+  showNotification(message, type = 'info') {
+    if (window.authManager && window.authManager.showNotification) {
+      window.authManager.showNotification(message, type);
+    } else {
+      console.log(`${type.toUpperCase()}: ${message}`);
+    }
+  }
+
+  hideModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+      modal.classList.add('hidden');
+      // Reset form
+      const form = modal.querySelector('form');
+      if (form) {
+        form.reset();
+      }
+      // Reset file upload area
+      const fileUploadArea = document.getElementById('file-upload-area');
+      if (fileUploadArea) {
+        fileUploadArea.innerHTML = `
+          <i class="fas fa-cloud-upload-alt"></i>
+          <p>Drag & drop your blood report here</p>
+          <p class="text-secondary">or click to browse files</p>
+          <small>Supported: PDF, JPG, PNG (max 10MB)</small>
+        `;
+      }
+    }
   }
 }
 
