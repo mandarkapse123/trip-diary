@@ -276,21 +276,9 @@ class AuthManager {
     // Initialize user profile if needed
     await this.ensureUserProfile(user);
 
-    // Trigger app initialization
-    console.log('🔍 Checking for window.app:', !!window.app);
-    if (window.app && typeof window.app.initialize === 'function') {
-      console.log('🚀 Calling app.initialize()');
-      try {
-        await window.app.initialize();
-        console.log('✅ App initialization completed');
-      } catch (error) {
-        console.error('❌ App initialization error:', error);
-      }
-    } else {
-      console.log('⚠️ window.app not available, setting up basic navigation...');
-      // Set up basic navigation as fallback
-      this.setupBasicNavigation();
-    }
+    // Set up navigation (always use basic navigation for reliability)
+    console.log('🔧 Setting up navigation...');
+    this.setupBasicNavigation();
 
     this.showNotification('Welcome to Family Health Tracker!', 'success');
   }
@@ -355,12 +343,33 @@ class AuthManager {
   }
 
   showNotification(message, type = 'info') {
-    // This will be implemented in the main app module
-    if (window.app && window.app.showNotification) {
-      window.app.showNotification(message, type);
-    } else {
-      console.log(`${type.toUpperCase()}: ${message}`);
-    }
+    console.log(`${type.toUpperCase()}: ${message}`);
+
+    // Create a simple notification element
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: ${type === 'error' ? '#ef4444' : type === 'success' ? '#10b981' : '#2563eb'};
+      color: white;
+      padding: 1rem 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      z-index: 10000;
+      max-width: 300px;
+      font-size: 0.875rem;
+    `;
+    notification.textContent = message;
+
+    document.body.appendChild(notification);
+
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.remove();
+      }
+    }, 5000);
   }
 
   getCurrentUser() {
