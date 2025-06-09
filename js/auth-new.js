@@ -282,13 +282,29 @@ class AuthManagerNew {
     console.log('🔧 Setting up navigation with NEW method...');
     this.setupBasicNavigation();
 
-    // Initialize reports manager for upload functionality
-    console.log('📄 Initializing reports manager...');
-    if (window.DatabaseManager && window.ReportsManager) {
+    // Initialize all managers for enhanced functionality
+    console.log('📄 Initializing managers...');
+    if (window.DatabaseManager) {
       const db = new DatabaseManager();
       db.initialize(this.supabase, user);
-      window.reportsManager = new ReportsManager(db);
-      console.log('✅ Reports manager initialized');
+
+      // Initialize reports manager
+      if (window.ReportsManager) {
+        window.reportsManager = new ReportsManager(db);
+        console.log('✅ Reports manager initialized');
+      }
+
+      // Initialize documents manager
+      if (window.DocumentsManager) {
+        window.documentsManager = new DocumentsManager(db);
+        console.log('✅ Documents manager initialized');
+      }
+
+      // Initialize photos manager
+      if (window.PhotosManager) {
+        window.photosManager = new PhotosManager(db);
+        console.log('✅ Photos manager initialized');
+      }
     }
 
     this.showNotification('Welcome to Family Health Tracker!', 'success');
@@ -415,8 +431,13 @@ class AuthManagerNew {
     const modalButtons = [
       { id: 'add-vital-btn', modal: 'add-vital-modal' },
       { id: 'upload-report-btn', modal: 'upload-report-modal' },
+      { id: 'upload-document-btn', modal: 'upload-document-modal' },
+      { id: 'add-photo-btn', modal: 'upload-photo-modal' },
       { id: 'add-vital-modal-btn', modal: 'add-vital-modal' },
       { id: 'upload-report-modal-btn', modal: 'upload-report-modal' },
+      { id: 'upload-document-modal-btn', modal: 'upload-document-modal' },
+      { id: 'upload-photo-modal-btn', modal: 'upload-photo-modal' },
+      { id: 'add-photo-modal-btn', modal: 'upload-photo-modal' },
       { id: 'invite-member-btn', modal: 'invite-member-modal' }
     ];
     

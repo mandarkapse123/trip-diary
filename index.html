@@ -55,12 +55,20 @@
             Dashboard
           </button>
           <button class="nav-btn" data-section="vitals">
-            <i class="fas fa-chart-line"></i>
+            <i class="fas fa-heartbeat"></i>
             Vitals
           </button>
-          <button class="nav-btn" data-section="reports">
+          <button class="nav-btn" data-section="documents">
             <i class="fas fa-file-medical"></i>
-            Blood Reports
+            Documents
+          </button>
+          <button class="nav-btn" data-section="photos">
+            <i class="fas fa-camera"></i>
+            Photos
+          </button>
+          <button class="nav-btn" data-section="reports">
+            <i class="fas fa-chart-line"></i>
+            Analytics
           </button>
           <button class="nav-btn" data-section="family">
             <i class="fas fa-users"></i>
@@ -85,16 +93,38 @@
       <!-- Dashboard Section -->
       <section id="dashboard-section" class="content-section active">
         <div class="section-header">
-          <h1>Health Dashboard</h1>
+          <h1>Family Health Dashboard</h1>
           <div class="quick-actions">
             <button class="btn btn-primary" id="add-vital-btn">
               <i class="fas fa-plus"></i>
               Add Vital
             </button>
-            <button class="btn btn-secondary" id="upload-report-btn">
+            <button class="btn btn-secondary" id="upload-document-btn">
               <i class="fas fa-upload"></i>
-              Upload Report
+              Upload Document
             </button>
+            <button class="btn btn-accent" id="add-photo-btn">
+              <i class="fas fa-camera"></i>
+              Add Photo
+            </button>
+          </div>
+        </div>
+
+        <!-- Family Health Overview -->
+        <div class="family-health-overview">
+          <div class="overview-card">
+            <h3>Family Health Status</h3>
+            <div id="family-health-summary" class="health-summary-grid">
+              <!-- Family member health cards will be populated here -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Health Parameters At-a-Glance -->
+        <div class="parameters-overview">
+          <h3>Health Parameters Overview</h3>
+          <div id="health-parameters-grid" class="parameters-grid">
+            <!-- Health parameter cards will be populated here -->
           </div>
         </div>
 
@@ -277,7 +307,185 @@
         </div>
       </section>
 
-      <!-- Blood Reports Section -->
+      <!-- Documents Section -->
+      <section id="documents-section" class="content-section">
+        <div class="section-header">
+          <h1>Medical Documents</h1>
+          <div class="quick-actions">
+            <button class="btn btn-primary" id="upload-document-modal-btn">
+              <i class="fas fa-upload"></i>
+              Upload Document
+            </button>
+            <button class="btn btn-secondary" id="scan-document-btn">
+              <i class="fas fa-scanner"></i>
+              Scan Document
+            </button>
+          </div>
+        </div>
+
+        <!-- Document Categories -->
+        <div class="document-categories">
+          <div class="category-tabs">
+            <button class="category-tab active" data-category="all">
+              <i class="fas fa-th"></i>
+              All Documents
+            </button>
+            <button class="category-tab" data-category="lab-reports">
+              <i class="fas fa-vial"></i>
+              Lab Reports
+            </button>
+            <button class="category-tab" data-category="imaging">
+              <i class="fas fa-x-ray"></i>
+              Medical Imaging
+            </button>
+            <button class="category-tab" data-category="prescriptions">
+              <i class="fas fa-pills"></i>
+              Prescriptions
+            </button>
+            <button class="category-tab" data-category="insurance">
+              <i class="fas fa-shield-alt"></i>
+              Insurance
+            </button>
+            <button class="category-tab" data-category="other">
+              <i class="fas fa-file-alt"></i>
+              Other
+            </button>
+          </div>
+        </div>
+
+        <!-- Search and Filters -->
+        <div class="documents-filters">
+          <div class="search-bar">
+            <i class="fas fa-search"></i>
+            <input type="text" id="document-search" placeholder="Search documents by name, date, or family member...">
+          </div>
+          <div class="filter-controls">
+            <select id="document-family-filter">
+              <option value="all">All Family Members</option>
+              <!-- Dynamic family member options -->
+            </select>
+            <select id="document-date-filter">
+              <option value="all">All Time</option>
+              <option value="30">Last 30 days</option>
+              <option value="90">Last 3 months</option>
+              <option value="365">Last year</option>
+            </select>
+            <button class="btn btn-secondary" id="document-view-toggle">
+              <i class="fas fa-th-large"></i>
+              Grid View
+            </button>
+          </div>
+        </div>
+
+        <!-- Documents Grid -->
+        <div class="documents-container">
+          <div class="documents-grid" id="documents-grid">
+            <!-- Dynamic document cards will be populated here -->
+          </div>
+
+          <!-- Empty State -->
+          <div class="empty-state" id="documents-empty-state" style="display: none;">
+            <i class="fas fa-file-medical fa-3x"></i>
+            <h3>No Documents Yet</h3>
+            <p>Upload your first medical document to get started</p>
+            <button class="btn btn-primary" onclick="document.getElementById('upload-document-modal-btn').click()">
+              <i class="fas fa-upload"></i>
+              Upload Document
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Photos Section -->
+      <section id="photos-section" class="content-section">
+        <div class="section-header">
+          <h1>Medical Photos</h1>
+          <div class="quick-actions">
+            <button class="btn btn-primary" id="add-photo-modal-btn">
+              <i class="fas fa-camera"></i>
+              Add Photo
+            </button>
+            <button class="btn btn-secondary" id="upload-photo-modal-btn">
+              <i class="fas fa-upload"></i>
+              Upload Photos
+            </button>
+          </div>
+        </div>
+
+        <!-- Photo Categories -->
+        <div class="photo-categories">
+          <div class="category-tabs">
+            <button class="category-tab active" data-category="all">
+              <i class="fas fa-images"></i>
+              All Photos
+            </button>
+            <button class="category-tab" data-category="symptoms">
+              <i class="fas fa-exclamation-triangle"></i>
+              Symptoms
+            </button>
+            <button class="category-tab" data-category="progress">
+              <i class="fas fa-chart-line"></i>
+              Progress
+            </button>
+            <button class="category-tab" data-category="wounds">
+              <i class="fas fa-band-aid"></i>
+              Wounds/Injuries
+            </button>
+            <button class="category-tab" data-category="skin">
+              <i class="fas fa-hand-paper"></i>
+              Skin Conditions
+            </button>
+            <button class="category-tab" data-category="other">
+              <i class="fas fa-camera"></i>
+              Other
+            </button>
+          </div>
+        </div>
+
+        <!-- Search and Filters -->
+        <div class="photos-filters">
+          <div class="search-bar">
+            <i class="fas fa-search"></i>
+            <input type="text" id="photo-search" placeholder="Search photos by description, date, or family member...">
+          </div>
+          <div class="filter-controls">
+            <select id="photo-family-filter">
+              <option value="all">All Family Members</option>
+              <!-- Dynamic family member options -->
+            </select>
+            <select id="photo-date-filter">
+              <option value="all">All Time</option>
+              <option value="7">Last 7 days</option>
+              <option value="30">Last 30 days</option>
+              <option value="90">Last 3 months</option>
+            </select>
+            <button class="btn btn-secondary" id="photo-view-toggle">
+              <i class="fas fa-th"></i>
+              Gallery View
+            </button>
+          </div>
+        </div>
+
+        <!-- Photos Gallery -->
+        <div class="photos-container">
+          <div class="photos-gallery" id="photos-gallery">
+            <!-- Dynamic photo cards will be populated here -->
+          </div>
+
+          <!-- Empty State -->
+          <div class="empty-state" id="photos-empty-state" style="display: none;">
+            <i class="fas fa-camera fa-3x"></i>
+            <h3>No Photos Yet</h3>
+            <p>Add your first medical photo to start tracking visual progress</p>
+            <button class="btn btn-primary" onclick="document.getElementById('add-photo-modal-btn').click()">
+              <i class="fas fa-camera"></i>
+              Add Photo
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Analytics Section (renamed from Blood Reports) -->
       <section id="reports-section" class="content-section">
         <div class="section-header">
           <h1>Blood Reports</h1>
@@ -533,6 +741,136 @@
     </div>
   </div>
 
+  <!-- Upload Document Modal -->
+  <div id="upload-document-modal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Upload Medical Document</h2>
+        <button class="close-modal">&times;</button>
+      </div>
+      <form id="upload-document-form">
+        <div class="form-group">
+          <label for="document-title">Document Title:</label>
+          <input type="text" id="document-title" required placeholder="e.g., Blood Test Results, X-Ray Report">
+        </div>
+
+        <div class="form-group">
+          <label for="document-category">Document Category:</label>
+          <select id="document-category" required>
+            <option value="">Select Category</option>
+            <option value="lab-reports">Lab Reports</option>
+            <option value="imaging">Medical Imaging</option>
+            <option value="prescriptions">Prescriptions</option>
+            <option value="insurance">Insurance Documents</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="document-family-member">Family Member:</label>
+          <select id="document-family-member" required>
+            <option value="">Select Family Member</option>
+            <!-- Dynamic options will be populated -->
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="document-date">Document Date:</label>
+          <input type="date" id="document-date" required>
+        </div>
+
+        <div class="form-group">
+          <label for="document-file">Upload File:</label>
+          <div class="file-upload-area" id="document-upload-area">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <p>Drag & drop your document here or click to browse</p>
+            <input type="file" id="document-file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" hidden>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="document-notes">Notes:</label>
+          <textarea id="document-notes" rows="3" placeholder="Any additional notes about this document"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="document-tags">Tags:</label>
+          <input type="text" id="document-tags" placeholder="e.g., urgent, follow-up, routine (comma separated)">
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary cancel-modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Upload Document</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Upload Photo Modal -->
+  <div id="upload-photo-modal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Add Medical Photo</h2>
+        <button class="close-modal">&times;</button>
+      </div>
+      <form id="upload-photo-form">
+        <div class="form-group">
+          <label for="photo-title">Photo Description:</label>
+          <input type="text" id="photo-title" required placeholder="e.g., Rash on left arm, Healing progress">
+        </div>
+
+        <div class="form-group">
+          <label for="photo-category">Photo Category:</label>
+          <select id="photo-category" required>
+            <option value="">Select Category</option>
+            <option value="symptoms">Symptoms</option>
+            <option value="progress">Progress Tracking</option>
+            <option value="wounds">Wounds/Injuries</option>
+            <option value="skin">Skin Conditions</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="photo-family-member">Family Member:</label>
+          <select id="photo-family-member" required>
+            <option value="">Select Family Member</option>
+            <!-- Dynamic options will be populated -->
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="photo-date">Photo Date:</label>
+          <input type="date" id="photo-date" required>
+        </div>
+
+        <div class="form-group">
+          <label for="photo-file">Upload Photo:</label>
+          <div class="file-upload-area photo-upload-area" id="photo-upload-area">
+            <i class="fas fa-camera"></i>
+            <p>Take a photo or upload from gallery</p>
+            <input type="file" id="photo-file" accept="image/*" capture="camera" hidden>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="photo-notes">Notes:</label>
+          <textarea id="photo-notes" rows="3" placeholder="Describe what the photo shows, symptoms, or progress notes"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="photo-tags">Tags:</label>
+          <input type="text" id="photo-tags" placeholder="e.g., before-treatment, day-3, improvement (comma separated)">
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary cancel-modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Photo</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Footer -->
   <footer class="footer">
     <div class="footer-content">
@@ -596,6 +934,8 @@
           'js/database.js' + cacheVersion,
           'js/vitals.js' + cacheVersion,
           'js/reports.js' + cacheVersion,
+          'js/documents.js' + cacheVersion,  // NEW: Documents manager
+          'js/photos.js' + cacheVersion,     // NEW: Photos manager
           'js/family.js' + cacheVersion,
           'js/charts.js' + cacheVersion,
           'js/app.js' + cacheVersion
