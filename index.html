@@ -588,16 +588,17 @@
         // Set global flag that libraries are ready
         window.librariesLoaded = true;
 
-        // Now load application scripts
+        // Now load application scripts with cache buster
+        const cacheVersion = '?v=' + Date.now();
         const appScripts = [
-          'js/config.js',
-          'js/auth.js',
-          'js/database.js',
-          'js/vitals.js',
-          'js/reports.js',
-          'js/family.js',
-          'js/charts.js',
-          'js/app.js'
+          'js/config.js' + cacheVersion,
+          'js/auth.js' + cacheVersion,
+          'js/database.js' + cacheVersion,
+          'js/vitals.js' + cacheVersion,
+          'js/reports.js' + cacheVersion,
+          'js/family.js' + cacheVersion,
+          'js/charts.js' + cacheVersion,
+          'js/app.js' + cacheVersion
         ];
 
         for (const scriptSrc of appScripts) {

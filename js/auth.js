@@ -1,5 +1,6 @@
-// Authentication module for Family Health Tracker
+// Authentication module for Family Health Tracker v2.0
 // Handles user authentication, registration, and session management
+// CACHE BUSTER: 2024-01-08-v2
 
 class AuthManager {
   constructor() {
@@ -260,9 +261,10 @@ class AuthManager {
   }
 
   async handleAuthSuccess(user) {
+    console.log('🎉 handleAuthSuccess called for user:', user.email);
     this.currentUser = user;
     this.hideAuthModal();
-    
+
     // Update UI with user info
     const userNameElement = document.getElementById('user-name');
     if (userNameElement) {
@@ -276,11 +278,14 @@ class AuthManager {
     // Initialize user profile if needed
     await this.ensureUserProfile(user);
 
-    // Set up navigation (always use basic navigation for reliability)
-    console.log('🔧 Setting up navigation...');
-    this.setupBasicNavigation();
+    // Set up navigation immediately - NO APP DEPENDENCIES
+    console.log('🔧 Setting up navigation immediately...');
+    setTimeout(() => {
+      this.setupBasicNavigation();
+    }, 100);
 
     this.showNotification('Welcome to Family Health Tracker!', 'success');
+    console.log('✅ Auth success handling completed');
   }
 
   handleSignOut() {
