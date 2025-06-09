@@ -9,6 +9,8 @@ class DatabaseManager {
     this.demoData = {
       vitals: [],
       reports: [],
+      documents: [],
+      photos: [],
       family: []
     };
   }
@@ -535,6 +537,241 @@ class DatabaseManager {
       console.error('Error exporting user data:', error);
       throw error;
     }
+  }
+
+  // Document Management Operations
+  async saveDocument(documentData) {
+    try {
+      if (this.demoMode) {
+        const newDocument = {
+          id: `demo-doc-${Date.now()}`,
+          user_id: this.currentUser.id,
+          title: documentData.title,
+          category: documentData.category,
+          family_member: documentData.family_member,
+          date: documentData.date,
+          notes: documentData.notes,
+          tags: documentData.tags,
+          fileUrl: documentData.fileUrl,
+          fileName: documentData.fileName,
+          fileType: documentData.fileType,
+          uploadDate: new Date().toISOString()
+        };
+        this.demoData.documents.unshift(newDocument);
+        return newDocument;
+      }
+
+      const { data, error } = await this.supabase
+        .from('medical_documents')
+        .insert({
+          user_id: this.currentUser.id,
+          title: documentData.title,
+          category: documentData.category,
+          family_member: documentData.family_member,
+          document_date: documentData.date,
+          notes: documentData.notes,
+          tags: documentData.tags,
+          file_url: documentData.fileUrl,
+          file_name: documentData.fileName,
+          file_type: documentData.fileType,
+          created_at: new Date().toISOString(),
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error saving document:', error);
+      throw error;
+    }
+  }
+
+  async getDocuments(limit = 50) {
+    try {
+      if (this.demoMode) {
+        return this.demoData.documents
+          .sort((a, b) => new Date(b.uploadDate) - new Date(a.uploadDate))
+          .slice(0, limit);
+      }
+
+      const { data, error } = await this.supabase
+        .from('medical_documents')
+        .select('*')
+        .eq('user_id', this.currentUser.id)
+        .order('created_at', { ascending: false })
+        .limit(limit);
+
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching documents:', error);
+      throw error;
+    }
+  }
+
+  async getRecentDocuments(limit = 5) {
+    return this.getDocuments(limit);
+  }
+
+  // Photo Management Operations
+  async savePhoto(photoData) {
+    try {
+      if (this.demoMode) {
+        const newPhoto = {
+          id: `demo-photo-${Date.now()}`,
+          user_id: this.currentUser.id,
+          title: photoData.title,
+          category: photoData.category,
+          family_member: photoData.family_member,
+          date: photoData.date,
+          notes: photoData.notes,
+          tags: photoData.tags,
+          imageUrl: photoData.imageUrl,
+          fileName: photoData.fileName,
+          fileType: photoData.fileType,
+          uploadDate: new Date().toISOString()
+        };
+        this.demoData.photos.unshift(newPhoto);
+        return newPhoto;
+      }
+
+      const { data, error } = await this.supabase
+        .from('medical_photos')
+        .insert({
+          user_id: this.currentUser.id,
+          title: photoData.title,
+          category: photoData.category,
+          family_member: photoData.family_member,
+          photo_date: photoData.date,
+          notes: photoData.notes,
+          tags: photoData.tags,
+          image_url: photoData.imageUrl,
+          file_name: photoData.fileName,
+          file_type: photoData.fileType,
+          created_at: new Date().toISOString(),
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error saving photo:', error);
+      throw error;
+    }
+  }
+
+  async getPhotos(limit = 50) {
+    try {
+      if (this.demoMode) {
+        return this.demoData.photos
+          .sort((a, b) => new Date(b.uploadDate) - new Date(a.uploadDate))
+          .slice(0, limit);
+      }
+
+      const { data, error } = await this.supabase
+        .from('medical_photos')
+        .select('*')
+        .eq('user_id', this.currentUser.id)
+        .order('created_at', { ascending: false })
+        .limit(limit);
+
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching photos:', error);
+      throw error;
+    }
+  }
+
+  async getRecentPhotos(limit = 5) {
+    return this.getPhotos(limit);
+  }
+
+  // Dashboard helper methods
+  async getLatestVitals() {
+    try {
+      const vitalTypes = ['blood_pressure', 'heart_rate', 'weight', 'temperature'];
+      const latestVitals = [];
+
+      for (const type of vitalTypes) {
+        const latest = await this.getLatestVitalSign(type);
+        if (latest) {
+          let value, status;
+
+          switch (type) {
+            case 'blood_pressure':
+              value = `${latest.systolic}/${latest.diastolic}`;
+              status = latest.systolic > 140 || latest.diastolic > 90 ? 'warning' : 'normal';
+              break;
+            case 'heart_rate':
+              value = latest.value.toString();
+              status = latest.value > 100 || latest.value < 60 ? 'warning' : 'normal';
+              break;
+            case 'weight':
+              value = latest.value.toString();
+              status = 'normal';
+              break;
+            case 'temperature':
+              value = latest.value.toString();
+              status = latest.value > 37.5 ? 'warning' : 'normal';
+              break;
+          }
+
+          latestVitals.push({
+            type,
+            value,
+            unit: this.getVitalUnit(type),
+            status,
+            lastUpdated: latest.recorded_at
+          });
+        }
+      }
+
+      return latestVitals;
+    } catch (error) {
+      console.error('Error fetching latest vitals:', error);
+      return [];
+    }
+  }
+
+  async getRecentVitals(limit = 5) {
+    try {
+      const vitals = await this.getVitalSigns(null, limit, 30);
+      return vitals.map(vital => ({
+        type: this.getVitalDisplayName(vital.vital_type),
+        value: vital.vital_type === 'blood_pressure' ?
+               `${vital.systolic}/${vital.diastolic} ${this.getVitalUnit(vital.vital_type)}` :
+               `${vital.value} ${this.getVitalUnit(vital.vital_type)}`,
+        date: vital.recorded_at
+      }));
+    } catch (error) {
+      console.error('Error fetching recent vitals:', error);
+      return [];
+    }
+  }
+
+  getVitalDisplayName(type) {
+    const names = {
+      blood_pressure: 'Blood Pressure',
+      heart_rate: 'Heart Rate',
+      weight: 'Weight',
+      temperature: 'Temperature',
+      bmi: 'BMI'
+    };
+    return names[type] || type;
+  }
+
+  getVitalUnit(type) {
+    const units = {
+      blood_pressure: 'mmHg',
+      heart_rate: 'bpm',
+      weight: 'kg',
+      temperature: '°C',
+      bmi: ''
+    };
+    return units[type] || '';
   }
 }
 

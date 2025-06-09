@@ -1,10 +1,9 @@
-// Authentication module for Family Health Tracker v2.0
-// Handles user authentication, registration, and session management
-// CACHE BUSTER: 2024-01-08-v2
+// NEW Authentication module for Family Health Tracker - CACHE BYPASS
+// This is a completely new file to bypass browser cache issues
 
-class AuthManager {
+class AuthManagerNew {
   constructor() {
-    console.log('🏗️ AuthManager constructor called');
+    console.log('🏗️ NEW AuthManager constructor called');
     this.supabase = null;
     this.currentUser = null;
     this.authModal = document.getElementById('auth-modal');
@@ -15,25 +14,25 @@ class AuthManager {
     this.authSwitchLink = document.getElementById('auth-switch-link');
     this.nameGroup = document.getElementById('name-group');
     this.isSignUp = false;
-
-    console.log('🔧 AuthManager DOM elements found:', {
+    
+    console.log('🔧 NEW AuthManager DOM elements found:', {
       authModal: !!this.authModal,
       authForm: !!this.authForm,
       authTitle: !!this.authTitle
     });
-
-    console.log('🚀 Starting auth initialization...');
+    
+    console.log('🚀 Starting NEW auth initialization...');
     this.initializeAuth();
   }
 
   async initializeAuth() {
-    console.log('🔐 initializeAuth() called');
+    console.log('🔐 NEW initializeAuth() called');
     try {
       // Check if we're in demo mode
       if (SUPABASE_CONFIG.url === 'DEMO_MODE') {
         console.log('🎭 Running in DEMO MODE - No Supabase connection');
         this.setupEventListeners();
-
+        
         // Simulate demo user login after a short delay
         setTimeout(() => {
           const demoUser = {
@@ -69,12 +68,12 @@ class AuthManager {
       console.log('🔍 Checking for existing session...');
       // Check for existing session
       const { data: { session } } = await this.supabase.auth.getSession();
-
+      
       // Also check for auth tokens in URL (from email confirmation)
       const urlParams = new URLSearchParams(window.location.search);
       const accessToken = urlParams.get('access_token');
       const refreshToken = urlParams.get('refresh_token');
-
+      
       if (accessToken && refreshToken) {
         console.log('🔗 Auth tokens found in URL, setting session...');
         try {
@@ -82,12 +81,12 @@ class AuthManager {
             access_token: accessToken,
             refresh_token: refreshToken
           });
-
+          
           if (sessionError) throw sessionError;
-
+          
           // Clean up URL
           window.history.replaceState({}, document.title, window.location.pathname);
-
+          
           if (sessionData.session) {
             console.log('✅ Session set from URL tokens, logging in user');
             await this.handleAuthSuccess(sessionData.session.user);
@@ -98,7 +97,7 @@ class AuthManager {
           this.showNotification('Email verification failed. Please try again.', 'error');
         }
       }
-
+      
       if (session) {
         console.log('✅ Existing session found, logging in user');
         await this.handleAuthSuccess(session.user);
@@ -144,17 +143,17 @@ class AuthManager {
   }
 
   showAuthModal() {
-    console.log('📱 showAuthModal() called');
+    console.log('📱 NEW showAuthModal() called');
     console.log('🔍 Auth modal element:', this.authModal);
     console.log('🔍 Loading screen element:', document.getElementById('loading-screen'));
-
+    
     if (this.authModal) {
       this.authModal.classList.remove('hidden');
       console.log('✅ Auth modal shown');
     } else {
       console.error('❌ Auth modal element not found!');
     }
-
+    
     const loadingScreen = document.getElementById('loading-screen');
     if (loadingScreen) {
       loadingScreen.classList.add('hidden');
@@ -214,7 +213,7 @@ class AuthManager {
   async signUp(email, password, fullName) {
     // Get the current URL for redirect
     const currentUrl = window.location.origin + window.location.pathname;
-
+    
     const { data, error } = await this.supabase.auth.signUp({
       email,
       password,
@@ -260,11 +259,12 @@ class AuthManager {
     }
   }
 
+  // THIS IS THE KEY METHOD - NO APP DEPENDENCIES!
   async handleAuthSuccess(user) {
-    console.log('🎉 handleAuthSuccess called for user:', user.email);
+    console.log('🎉 NEW handleAuthSuccess called for user:', user.email);
     this.currentUser = user;
     this.hideAuthModal();
-
+    
     // Update UI with user info
     const userNameElement = document.getElementById('user-name');
     if (userNameElement) {
@@ -278,14 +278,48 @@ class AuthManager {
     // Initialize user profile if needed
     await this.ensureUserProfile(user);
 
-    // Set up navigation immediately - NO APP DEPENDENCIES
-    console.log('🔧 Setting up navigation immediately...');
-    setTimeout(() => {
-      this.setupBasicNavigation();
-    }, 100);
+    // Set up navigation immediately - NO APP DEPENDENCIES AT ALL!
+    console.log('🔧 Setting up navigation with NEW method...');
+    this.setupBasicNavigation();
+
+    // Initialize all managers for enhanced functionality
+    console.log('📄 Initializing managers...');
+    if (window.DatabaseManager) {
+      const db = new DatabaseManager();
+      db.initialize(this.supabase, user);
+
+      // Initialize reports manager
+      if (window.ReportsManager) {
+        window.reportsManager = new ReportsManager(db);
+        console.log('✅ Reports manager initialized');
+      }
+
+      // Initialize documents manager
+      if (window.DocumentsManager) {
+        window.documentsManager = new DocumentsManager(db);
+        console.log('✅ Documents manager initialized');
+      }
+
+      // Initialize photos manager
+      if (window.PhotosManager) {
+        window.photosManager = new PhotosManager(db);
+        console.log('✅ Photos manager initialized');
+      }
+
+      // Initialize dashboard manager
+      if (window.DashboardManager) {
+        window.dashboardManager = new DashboardManager(db);
+        console.log('✅ Dashboard manager initialized');
+
+        // Load dashboard data
+        setTimeout(() => {
+          window.dashboardManager.loadDashboard();
+        }, 500);
+      }
+    }
 
     this.showNotification('Welcome to Family Health Tracker!', 'success');
-    console.log('✅ Auth success handling completed');
+    console.log('✅ NEW Auth success handling completed');
   }
 
   handleSignOut() {
@@ -349,7 +383,7 @@ class AuthManager {
 
   showNotification(message, type = 'info') {
     console.log(`${type.toUpperCase()}: ${message}`);
-
+    
     // Create a simple notification element
     const notification = document.createElement('div');
     notification.style.cssText = `
@@ -366,15 +400,84 @@ class AuthManager {
       font-size: 0.875rem;
     `;
     notification.textContent = message;
-
+    
     document.body.appendChild(notification);
-
+    
     // Auto remove after 5 seconds
     setTimeout(() => {
       if (notification.parentNode) {
         notification.remove();
       }
     }, 5000);
+  }
+
+  setupBasicNavigation() {
+    console.log('🔧 NEW setupBasicNavigation called');
+    
+    // Set up navigation buttons
+    const navButtons = document.querySelectorAll('.nav-btn');
+    console.log('🔍 Found nav buttons:', navButtons.length);
+    
+    navButtons.forEach((btn, index) => {
+      console.log(`📱 Setting up nav button ${index}:`, btn.dataset.section);
+      btn.addEventListener('click', (e) => {
+        const section = e.target.closest('.nav-btn').dataset.section;
+        console.log('🖱️ NEW Navigation clicked:', section);
+        
+        // Update navigation
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        
+        // Update content sections
+        document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
+        const targetSection = document.getElementById(`${section}-section`);
+        if (targetSection) {
+          targetSection.classList.add('active');
+          console.log('✅ NEW Section switched to:', section);
+        }
+      });
+    });
+    
+    // Set up modal buttons
+    const modalButtons = [
+      { id: 'add-vital-btn', modal: 'add-vital-modal' },
+      { id: 'upload-report-btn', modal: 'upload-report-modal' },
+      { id: 'upload-document-btn', modal: 'upload-document-modal' },
+      { id: 'add-photo-btn', modal: 'upload-photo-modal' },
+      { id: 'add-vital-modal-btn', modal: 'add-vital-modal' },
+      { id: 'upload-report-modal-btn', modal: 'upload-report-modal' },
+      { id: 'upload-document-modal-btn', modal: 'upload-document-modal' },
+      { id: 'upload-photo-modal-btn', modal: 'upload-photo-modal' },
+      { id: 'add-photo-modal-btn', modal: 'upload-photo-modal' },
+      { id: 'invite-member-btn', modal: 'invite-member-modal' }
+    ];
+    
+    modalButtons.forEach(({ id, modal }) => {
+      const btn = document.getElementById(id);
+      if (btn) {
+        btn.addEventListener('click', () => {
+          console.log('🖱️ NEW Modal button clicked:', id);
+          const modalElement = document.getElementById(modal);
+          if (modalElement) {
+            modalElement.classList.remove('hidden');
+            console.log('✅ NEW Modal shown:', modal);
+          }
+        });
+      }
+    });
+    
+    // Set up modal close buttons
+    document.querySelectorAll('.close-modal, .cancel-modal').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const modal = e.target.closest('.modal');
+        if (modal) {
+          modal.classList.add('hidden');
+          console.log('✅ NEW Modal closed');
+        }
+      });
+    });
+    
+    console.log('✅ NEW Basic navigation setup completed');
   }
 
   getCurrentUser() {
@@ -389,130 +492,35 @@ class AuthManager {
     const { data: { session } } = await this.supabase.auth.getSession();
     return !!session;
   }
-
-  setupBasicNavigation() {
-    console.log('🔧 Setting up basic navigation as fallback...');
-
-    // Set up navigation buttons
-    document.querySelectorAll('.nav-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const section = e.target.closest('.nav-btn').dataset.section;
-        console.log('🖱️ Basic navigation clicked:', section);
-
-        // Update navigation
-        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-
-        // Update content sections
-        document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
-        const targetSection = document.getElementById(`${section}-section`);
-        if (targetSection) {
-          targetSection.classList.add('active');
-          console.log('✅ Section switched to:', section);
-        }
-      });
-    });
-
-    // Set up modal buttons
-    const modalButtons = [
-      { id: 'add-vital-btn', modal: 'add-vital-modal' },
-      { id: 'upload-report-btn', modal: 'upload-report-modal' },
-      { id: 'add-vital-modal-btn', modal: 'add-vital-modal' },
-      { id: 'upload-report-modal-btn', modal: 'upload-report-modal' },
-      { id: 'invite-member-btn', modal: 'invite-member-modal' }
-    ];
-
-    modalButtons.forEach(({ id, modal }) => {
-      const btn = document.getElementById(id);
-      if (btn) {
-        btn.addEventListener('click', () => {
-          console.log('🖱️ Modal button clicked:', id);
-          const modalElement = document.getElementById(modal);
-          if (modalElement) {
-            modalElement.classList.remove('hidden');
-            console.log('✅ Modal shown:', modal);
-          }
-        });
-      }
-    });
-
-    // Set up modal close buttons
-    document.querySelectorAll('.close-modal, .cancel-modal').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const modal = e.target.closest('.modal');
-        if (modal) {
-          modal.classList.add('hidden');
-          console.log('✅ Modal closed');
-        }
-      });
-    });
-
-    console.log('✅ Basic navigation setup completed');
-  }
 }
 
-// Wait for libraries to be loaded before initializing
-function waitForLibraries() {
-  return new Promise((resolve) => {
-    const checkLibraries = () => {
-      if (window.supabase && window.Chart && window.librariesLoaded) {
-        console.log('✅ All libraries are ready, initializing auth manager');
-        resolve();
-      } else {
-        console.log('⏳ Waiting for libraries to load...', {
-          supabase: !!window.supabase,
-          chart: !!window.Chart,
-          librariesLoaded: !!window.librariesLoaded
-        });
-        setTimeout(checkLibraries, 200);
-      }
-    };
-    checkLibraries();
-  });
-}
-
-// Initialize auth manager when libraries are ready
-async function initializeAuthManager() {
-  console.log('🚀 Starting auth manager initialization...');
+// Initialize NEW auth manager when libraries are ready
+async function initializeNewAuthManager() {
+  console.log('🚀 Starting NEW auth manager initialization...');
   try {
     console.log('⏳ Waiting for libraries to be ready...');
-    await waitForLibraries();
-
-    // Ensure app is created before auth manager
-    console.log('🔍 Checking if app exists before creating auth manager...');
-    if (!window.app) {
-      console.log('⚠️ App not found, waiting for app initialization...');
-      // Wait a bit for app to be created
-      await new Promise(resolve => setTimeout(resolve, 500));
-      if (!window.app) {
-        console.log('🏗️ App still not found, this might be normal if auth happens first');
-      }
+    
+    // Wait for libraries
+    while (!window.supabase || !window.Chart || !window.librariesLoaded) {
+      console.log('⏳ Waiting for libraries...', {
+        supabase: !!window.supabase,
+        chart: !!window.Chart,
+        librariesLoaded: !!window.librariesLoaded
+      });
+      await new Promise(resolve => setTimeout(resolve, 200));
     }
-
-    console.log('📱 Creating AuthManager instance...');
-    window.authManager = new AuthManager();
-    console.log('✅ AuthManager created successfully!');
+    
+    console.log('📱 Creating NEW AuthManager instance...');
+    window.authManager = new AuthManagerNew();
+    console.log('✅ NEW AuthManager created successfully!');
   } catch (error) {
-    console.error('❌ Failed to initialize auth manager:', error);
-    // Show error message to user
-    const loadingScreen = document.getElementById('loading-screen');
-    if (loadingScreen) {
-      loadingScreen.innerHTML = `
-        <div style="text-align: center; padding: 2rem;">
-          <h2 style="color: #dc3545;">Initialization Error</h2>
-          <p>Failed to initialize the application. Please refresh the page.</p>
-          <button onclick="window.location.reload()" style="background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
-            Refresh Page
-          </button>
-        </div>
-      `;
-    }
+    console.error('❌ Failed to initialize NEW auth manager:', error);
   }
 }
 
 // Start initialization when DOM is ready
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initializeAuthManager);
+  document.addEventListener('DOMContentLoaded', initializeNewAuthManager);
 } else {
-  initializeAuthManager();
+  initializeNewAuthManager();
 }
