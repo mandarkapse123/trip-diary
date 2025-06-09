@@ -277,8 +277,21 @@ class AuthManager {
     await this.ensureUserProfile(user);
 
     // Trigger app initialization
-    if (window.app) {
+    console.log('🔍 Checking for window.app:', !!window.app);
+    if (window.app && typeof window.app.initialize === 'function') {
+      console.log('🚀 Calling app.initialize()');
       window.app.initialize();
+    } else {
+      console.log('⚠️ window.app or initialize method not available, waiting...');
+      // Wait a bit and try again
+      setTimeout(() => {
+        if (window.app && typeof window.app.initialize === 'function') {
+          console.log('🚀 Calling app.initialize() (delayed)');
+          window.app.initialize();
+        } else {
+          console.error('❌ window.app.initialize still not available');
+        }
+      }, 500);
     }
 
     this.showNotification('Welcome to Family Health Tracker!', 'success');

@@ -459,7 +459,19 @@ class FamilyHealthApp {
   }
 }
 
-// Initialize app when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-  window.app = new FamilyHealthApp();
-});
+// Initialize app when DOM is loaded or immediately if already loaded
+function initializeApp() {
+  console.log('🚀 Initializing FamilyHealthApp...');
+  if (!window.app) {
+    window.app = new FamilyHealthApp();
+    console.log('✅ FamilyHealthApp created and assigned to window.app');
+  } else {
+    console.log('ℹ️ FamilyHealthApp already exists');
+  }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeApp);
+} else {
+  initializeApp();
+}
